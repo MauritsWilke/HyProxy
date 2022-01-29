@@ -24,6 +24,29 @@ const formatting = {
 	"reset": "§r"
 }
 
+function flatText(obj) {
+	let flattened = "";
+	flattened += obj?.text;
+	if (!obj?.extra) return flattened
+
+	for (const el of obj.extra) {
+		let str = "";
+		[
+			"bold",
+			"italic",
+			"underlined",
+			"obfuscated",
+			"strikethrough",
+			"color"
+		].forEach(v => {
+			if (el?.[v]) str += formatting[el[v]]
+		})
+		str += el.text
+		flattened += str
+	}
+	return flattened
+}
+
 class Message {
 	constructor(obj) {
 		this.message = {
@@ -67,26 +90,6 @@ class MessageComponent {
 
 module.exports = {
 	MessageComponent,
-	Message
+	Message,
+	flatText
 }
-
-// function flatText(obj) {
-// 	console.log(obj)
-// 	let flattened = "";
-// 	for (const el of obj.extra) {
-// 		let str = "";
-// 		[
-// 			"bold",
-// 			"italic",
-// 			"underlined",
-// 			"obfuscated",
-// 			"strikethrough",
-// 			"color"
-// 		].forEach(v => {
-// 			if (el?.[v]) str += formatting[el[v]]
-// 		})
-// 		str += el.text
-// 		flattened += str
-// 	}
-// 	return flattened
-// }

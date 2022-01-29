@@ -80,8 +80,9 @@ class Proxy extends EventEmitter {
 				let preventSend = false;
 				const serialized = client.deserializer.parsePacketBuffer(buffer)
 				if (serialized?.data?.name === "chat") {
+					const { prefix } = require("../config.json")
 					const msg = serialized.data.params.message;
-					const commandName = msg.split(/ +/)[0].slice(config.prefix.length).toLowerCase();
+					const commandName = msg.split(/ +/)[0].slice(prefix.length).toLowerCase();
 					const command = this.commands.get(commandName) || [...this.commands].find(command => command[1]?.aliases?.includes(commandName))
 
 					if (command) {

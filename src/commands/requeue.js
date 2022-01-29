@@ -7,8 +7,8 @@ module.exports = class extends Command {
 	constructor() {
 		super({
 			name: "requeue",
-			description: "",
-			example: "",
+			description: "Requeue the last game you played!",
+			example: "requeue",
 			aliases: [
 				"rq"
 			]
@@ -17,7 +17,7 @@ module.exports = class extends Command {
 
 	async run(client, message, args, server, user) {
 		if (!user.lastGame) {
-			const msg = new Message({ text: `${colour} You haven't played any games yet!` }).stringify()
+			const msg = new Message({ text: `${colour}You haven't played any games yet!` }).stringify()
 			client.write("chat", { message: msg })
 		}
 		else server.write("chat", { message: `/play ${user.lastGame}` })

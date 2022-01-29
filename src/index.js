@@ -4,6 +4,7 @@ const Proxy = require("./utils/proxy");
 const { fullParse } = require("./utils/util")
 const config = require("./config.json")
 const chalk = require("chalk")
+const { flatText } = require("./utils/message")
 
 if (!config.username || !config.password || !config.auth) {
 	const readline = require('readline').createInterface({
@@ -30,7 +31,9 @@ if (!config.username || !config.password || !config.auth) {
 function init() {
 	const user = {
 		commands: new Map(),
-		lastGame: null
+		overwrites: new Map(),
+		lastGame: null,
+		mode: null
 	};
 
 	const commandFiles = readdirSync(`./src/commands`).filter(file => file.endsWith('.js'))
@@ -39,6 +42,14 @@ function init() {
 		const command = new commandTemplate
 		user.commands.set(command.name, command)
 		delete require.cache[resolve(`./src/commands/${file}`)]
+	}
+
+	const overwrites = readdirSync(`./src/overwrite`).filter(file => file.endsWith('.js'))
+	for (const file of overwrites) {
+		const overwriteTemplate = require(resolve(`./src/overwrite/${file}`));
+		const overwrite = new overwriteTemplate
+		user.overwrites.set(overwrite.game, overwrite)
+		delete require.cache[resolve(`./src/overwrite/${file}`)]
 	}
 
 	const proxy = new Proxy(
@@ -50,7 +61,8 @@ function init() {
 	);
 
 	proxy.on("outgoing", (message, client, server) => {
-		const args = message.slice(config.prefix.length).split(/ +/);
+		const { prefix } = require("./config.json")
+		const args = message.slice(prefix.length).split(/ +/);
 		const commandName = args.shift().toLowerCase();
 		const command = user.commands.get(commandName) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))[0])
 
@@ -59,10 +71,30 @@ function init() {
 		console.log(chalk.greenBright` > ${client.username} ran ${command.name}`)
 	})
 
-	proxy.on("incoming", (msg) => {
+	proxy.on("incoming", (msg, client, server) => {
 		msg = fullParse(msg)
-		if (msg?.text?.mode) user.lastGame = msg.text.mode.toLowerCase();
-	})
+		if (msg?.text?.mode) {
+			user.lastGame = msg.text.mode.toLowerCase();
+			user.mode = msg.text.gametype.toLowerCase();
+		}
 
+		const flat = flatText(msg);
+		const flatClean = flat.replace(/§./g, "");
+		if (flatClean.match(/ has joined \(\d\/\d\)!/)) {
+			const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
+			client.write("chat", { message: JSON.stringify(ign) })
+		}
+	})
 	proxy.start();
 }
+
+process.on("uncaughtException", (e, o) => {
+	console.clear();
+	console.log(chalk.redBright`Your credentials are incorrect!`)
+	const copy = config;
+	delete copy.username;
+	delete copy.password;
+	delete copy.auth;
+	writeFileSync("./src/config.json", JSON.stringify(copy, null, 4))
+	process.exit();
+})
