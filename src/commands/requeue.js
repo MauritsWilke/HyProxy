@@ -1,7 +1,6 @@
 const Command = require('../utils/command')
 const { MessageComponent, Message } = require("../utils/message")
 const { colour } = require("../utils/templates.json")
-const { } = require("../config.json")
 
 module.exports = class extends Command {
 	constructor() {

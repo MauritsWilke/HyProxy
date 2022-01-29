@@ -8,12 +8,11 @@
 		"@types/node": "^17.0.13"
 	},
 	"scripts": {
-		"build": "pkg src/index.js -c package.json"
+		"build": "pkg src/index.js -c package.json --debug"
 	},
 	"pkg": {
-		"scripts": "src/commands/*.js",
-		"assets": "src/**/*",
-		"outputPath": "dist",
-		"output": "HyProxy"
+		"scripts": "./src/**/*.js",
+		"assets": "./src/**/*",
+		"outputPath": "dist"
 	}
 }

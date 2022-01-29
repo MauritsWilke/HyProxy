@@ -1,8 +1,7 @@
 const { createServer, createClient, states, ping } = require("minecraft-protocol");
 const chalk = require("chalk");
-const config = require("../config.json");
 const templates = require("./templates.json")
-const EventEmitter = require("events")
+const EventEmitter = require("events");
 
 class Proxy extends EventEmitter {
 	constructor(username, password, auth, port, commands) {
@@ -80,7 +79,8 @@ class Proxy extends EventEmitter {
 				let preventSend = false;
 				const serialized = client.deserializer.parsePacketBuffer(buffer)
 				if (serialized?.data?.name === "chat") {
-					const { prefix } = require("../config.json")
+					const { join } = require("path");
+					const { prefix } = require(join(process.cwd(), "config.json"))
 					const msg = serialized.data.params.message;
 					const commandName = msg.split(/ +/)[0].slice(prefix.length).toLowerCase();
 					const command = this.commands.get(commandName) || [...this.commands].find(command => command[1]?.aliases?.includes(commandName))

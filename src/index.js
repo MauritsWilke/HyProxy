@@ -1,11 +1,24 @@
-const { readdirSync, writeFileSync } = require("fs")
-const { resolve } = require('path');
+const { readdirSync, writeFileSync, existsSync } = require("fs")
+const { resolve, join } = require('path');
 const Proxy = require("./utils/proxy");
 const { fullParse } = require("./utils/util")
-const config = require("./config.json")
 const chalk = require("chalk")
 const { flatText } = require("./utils/message")
+const { name } = require("./utils/templates.json")
+process.stdout.write("\033]0;" + name + "\007");
 
+if (!existsSync(join(process.cwd(), "./config.json"))) {
+	const { open } = require("fs")
+	open(join(process.cwd(), "./config.json"), "w", (err, file) => {
+		if (err) return;
+	})
+	const setup = { prefix: "/" }
+	writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(setup, null, 4))
+
+}
+const config = require(join(process.cwd(), "./config.json"))
+
+console.log(config);
 if (!config.username || !config.password || !config.auth) {
 	const readline = require('readline').createInterface({
 		input: process.stdin,
@@ -19,12 +32,12 @@ if (!config.username || !config.password || !config.auth) {
 				copy.username = email;
 				copy.password = password;
 				copy.auth = bool.toString().toLowerCase() === "yes" ? "microsoft" : "mojang";
-				writeFileSync("./src/config.json", JSON.stringify(copy, null, 4))
+				writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(copy, null, 4))
 				readline.close();
 			})
 		})
 	})
-
+	console.clear();
 	readline.on("close", () => init())
 } else init();
 
@@ -36,21 +49,21 @@ function init() {
 		mode: null
 	};
 
-	const commandFiles = readdirSync(`./src/commands`).filter(file => file.endsWith('.js'))
+	const commandFiles = readdirSync(join(__dirname, `./commands`)).filter(file => file.endsWith('.js'))
 	for (const file of commandFiles) {
-		const commandTemplate = require(resolve(`./src/commands/${file}`));
+		const commandTemplate = require(resolve(join(__dirname, `./commands/${file}`)));
 		const command = new commandTemplate
 		user.commands.set(command.name, command)
-		delete require.cache[resolve(`./src/commands/${file}`)]
+		delete require.cache[resolve(join(__dirname, `./commands/${file}`))]
 	}
 
-	const overwrites = readdirSync(`./src/overwrite`).filter(file => file.endsWith('.js'))
-	for (const file of overwrites) {
-		const overwriteTemplate = require(resolve(`./src/overwrite/${file}`));
-		const overwrite = new overwriteTemplate
-		user.overwrites.set(overwrite.game, overwrite)
-		delete require.cache[resolve(`./src/overwrite/${file}`)]
-	}
+	// const overwrites = readdirSync(`./src/overwrite`).filter(file => file.endsWith('.js'))
+	// for (const file of overwrites) {
+	// 	const overwriteTemplate = require(resolve(`./src/overwrite/${file}`));
+	// 	const overwrite = new overwriteTemplate
+	// 	user.overwrites.set(overwrite.game, overwrite)
+	// 	delete require.cache[resolve(`./src/overwrite/${file}`)]
+	// }
 
 	const proxy = new Proxy(
 		config.username,
@@ -61,7 +74,8 @@ function init() {
 	);
 
 	proxy.on("outgoing", (message, client, server) => {
-		const { prefix } = require("./config.json")
+		const { join } = require("path");
+		const { prefix } = require(join(process.cwd(), "config.json"))
 		const args = message.slice(prefix.length).split(/ +/);
 		const commandName = args.shift().toLowerCase();
 		const command = user.commands.get(commandName) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))[0])
@@ -89,12 +103,13 @@ function init() {
 }
 
 process.on("uncaughtException", (e, o) => {
-	console.clear();
-	console.log(chalk.redBright`Your credentials are incorrect!`)
-	const copy = config;
-	delete copy.username;
-	delete copy.password;
-	delete copy.auth;
-	writeFileSync("./src/config.json", JSON.stringify(copy, null, 4))
+	console.log(e)
+	// console.clear();
+	// console.log(chalk.redBright`Your credentials are incorrect!`)
+	// const copy = config;
+	// delete copy.username;
+	// delete copy.password;
+	// delete copy.auth;
+	// writeFileSync(join(process.cwd(), "./src/config.json"), JSON.stringify(copy, null, 4))
 	process.exit();
 })

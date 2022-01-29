@@ -1,4 +1,4 @@
 node_modules/
 inStream.txt
-src/config.json
+config.json
 dist/

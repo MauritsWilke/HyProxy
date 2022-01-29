@@ -20,7 +20,7 @@ module.exports = class {
 const Command = require('../utils/command')
 const { MessageComponent, Message } = require("../utils/message")
 const { } = require("../utils/templates.json")
-const { } = require("../config.json")
+const { } = require(join(process.cwd(), "./config.json"))
 
 module.exports = class extends Command {
 	constructor() {
