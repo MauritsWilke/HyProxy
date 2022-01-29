@@ -1,5 +1,9 @@
 function fullParse(obj) {
-	if (typeof obj === "string") obj = JSON.parse(obj)
+	if (typeof obj === "string") try {
+		obj = JSON.parse(obj)
+	} catch (e) {
+		throw new Error("Argument must be of type 'object' or of type 'string' with object structure")
+	}
 	Object.entries(obj).forEach(
 		([key, value]) => {
 			try {

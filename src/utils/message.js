@@ -1,50 +1,92 @@
+const { colour } = require("./templates.json")
+const formatting = {
+	"black": "§0",
+	"dark_blue": "§1",
+	"dark_green": "§2",
+	"dark_aqua": "§3",
+	"dark_red": "§4",
+	"dark_purple": "§5",
+	"gold": "§6",
+	"gray": "§7",
+	"dark_gray": "§8",
+	"blue": "§9",
+	"green": "§a",
+	"aqua": "§b",
+	"red": "§c",
+	"light_purple": "§d",
+	"yellow": "§e",
+	"white": "§f",
+	"obfuscated": "§k",
+	"bold": "§l",
+	"strikethrough": "§m",
+	"underline": "§n",
+	"italic": "§o",
+	"reset": "§r"
+}
 
 class Message {
-	constructor(username, text, type, hover, click) {
-		this.msg = {
-			"translate": type || "chat.type.announcement",
-			"with": [
-				{
-					"text": username
-				},
-				{
-					"text": text
-				}
-			],
+	constructor(obj) {
+		this.message = {
+			text: obj?.text || "",
 		}
 
-		if (hover) this.msg.with[0].hoverEvent = {
-			"action": hover.action,
-			"value": hover.value
+		if (obj.components) this.message.extra = obj.components.map(v => v.message)
+	}
+
+	stringify() {
+		return JSON.stringify(this.message)
+	}
+}
+
+class MessageComponent {
+	constructor(text) {
+		this.message = {
+			text: text,
 		}
 	}
 
-	stringify = () => JSON.stringify(this.msg)
+	onHover(title, fields) {
+		fields = `\n${fields.join(`\n§r`)}`
+		title = title.split(/(§.)/g);
+		title.splice(title.length - 1, 0, "§l");
+		this.message['hoverEvent'] = {
+			"action": "show_text",
+			"value": `${title.join("")}${fields}`
+		}
+		return this
+	}
+
+	onClick(type, value) {
+		this.message['clickEvent'] = {
+			action: type,
+			value: value
+		}
+		return this
+	}
 }
 
+module.exports = {
+	MessageComponent,
+	Message
+}
 
-// console.log(new Message("de_grote", "balls").stringify())
-// const msg = {
-// 	"translate": "chat.type.announcement",
-// 	"with": [
-// 		{
-// 			"text": "USER",
-// 			"clickEvent": {
-// 				"action": "suggest_command",
-// 				"value": "/l"
-// 			},
-// 			"hoverEvent": {
-// 				"action": "show_text",
-// 				"value": {
-// 					"text": "&1la\n§1la\nla",
-// 				}
-// 			},
-// 			"insertion": "Suck my balls"
-// 		},
-// 		{
-// 			"text": "ugh"
-// 		}
-// 	]
+// function flatText(obj) {
+// 	console.log(obj)
+// 	let flattened = "";
+// 	for (const el of obj.extra) {
+// 		let str = "";
+// 		[
+// 			"bold",
+// 			"italic",
+// 			"underlined",
+// 			"obfuscated",
+// 			"strikethrough",
+// 			"color"
+// 		].forEach(v => {
+// 			if (el?.[v]) str += formatting[el[v]]
+// 		})
+// 		str += el.text
+// 		flattened += str
+// 	}
+// 	return flattened
 // }
-
-// console.log(JSON.stringify(msg));
