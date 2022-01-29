@@ -33,11 +33,11 @@ if (!config.username || !config.password || !config.auth) {
 				copy.password = password;
 				copy.auth = bool.toString().toLowerCase() === "yes" ? "microsoft" : "mojang";
 				writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(copy, null, 4))
+				console.clear();
 				readline.close();
 			})
 		})
 	})
-	console.clear();
 	readline.on("close", () => init())
 } else init();
 
