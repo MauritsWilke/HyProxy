@@ -7,11 +7,21 @@ Simply go to [the latest release](https://github.com/MauritsWilke/HyProxy/releas
 
 After installing just run the executable, this should spawn a terminal asking for your email and password linked with your account.\
 `Note: this will create a config.json in the same folder as the program`
+<details>
+<summary>Example</summary>
+
 ![image of login](https://raw.githubusercontent.com/MauritsWilke/HyProxy/main/.github/assets/login.png)
+</details>
 
 After logging in, the terminal will say ` > Proxy has been started.` after which you can connect to it by connecting to localhost in Minecraft.
-![example of localhost](https://raw.githubusercontent.com/MauritsWilke/HyProxy/main/.github/assets/localhost.png)
 `Note: you can also add localhost as a server, it should look exactly like Hypixel`
+
+<details>
+<summary>Example</summary>
+
+![example of localhost](https://raw.githubusercontent.com/MauritsWilke/HyProxy/main/.github/assets/localhost.png)
+</details>
+
 
 ```diff
 - This application is used at your own risk
