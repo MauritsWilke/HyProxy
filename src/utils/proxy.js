@@ -2,6 +2,8 @@ const { createServer, createClient, states, ping } = require("minecraft-protocol
 const chalk = require("chalk");
 const templates = require("./templates.json")
 const EventEmitter = require("events");
+const { join } = require("path");
+
 
 class Proxy extends EventEmitter {
 	constructor(username, password, auth, port, commands) {
@@ -20,7 +22,7 @@ class Proxy extends EventEmitter {
 
 		const localhost = createServer({
 			"online-mode": true,
-			host: "0.0.0.0",
+			// host: "0.0.0.0",
 			port: this.port,
 			keepAlive: false,
 			version: "1.8.9",
@@ -38,15 +40,7 @@ class Proxy extends EventEmitter {
 		};
 
 		localhost.on("login", client => {
-			setTimeout(() => {
-				[
-					templates.divider.repeat(templates.dividerWidth),
-					`  Welcome, ${client.username}`,
-					`  Connected to Hypixel through ${templates.name}`,
-					`  Run /help to see the commands`,
-					templates.divider.repeat(templates.dividerWidth)
-				].forEach(msg => client.write("chat", { message: JSON.stringify(`${templates.colour}${msg}`), position: 0, sender: "0" }))
-			}, 2500)
+			console.log(chalk.greenBright` > Logging in to Hypixel as ${client.username}`)
 
 			let endedClient = false;
 			let endedTargetClient = false;
@@ -75,19 +69,31 @@ class Proxy extends EventEmitter {
 				})
 			})
 
+			setTimeout(() => {
+				[
+					templates.divider.repeat(templates.dividerWidth),
+					`  Welcome, ${client.username}`,
+					`  Connected to Hypixel through ${templates.name}`,
+					`  Run /help to see the commands`,
+					templates.divider.repeat(templates.dividerWidth)
+				].forEach(msg => client.write("chat", { message: JSON.stringify(`${templates.colour}${msg}`), position: 0, sender: "0" }))
+			}, 2000)
+
 			client.on("packet", (data, meta, buffer) => {
+
 				let preventSend = false;
 				const serialized = client.deserializer.parsePacketBuffer(buffer)
 				if (serialized?.data?.name === "chat") {
-					const { join } = require("path");
 					const { prefix } = require(join(process.cwd(), "config.json"))
 					const msg = serialized.data.params.message;
-					const commandName = msg.split(/ +/)[0].slice(prefix.length).toLowerCase();
-					const command = this.commands.get(commandName) || [...this.commands].find(command => command[1]?.aliases?.includes(commandName))
 
-					if (command) {
-						preventSend = true;
-						this.emit("outgoing", msg, client, hypixel)
+					if (msg.startsWith(prefix)) {
+						const commandName = msg.split(/ +/)[0].slice(prefix.length).toLowerCase();
+						const command = this.commands.get(commandName) || [...this.commands].find(command => command[1]?.aliases?.includes(commandName))
+						if (command) {
+							preventSend = true;
+							this.emit("outgoing", msg, client, hypixel)
+						}
 					}
 				}
 

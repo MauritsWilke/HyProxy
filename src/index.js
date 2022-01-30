@@ -1,45 +1,18 @@
-const { readdirSync, writeFileSync, existsSync } = require("fs")
+const { readdirSync, writeFileSync, existsSync, appendFileSync } = require("fs")
 const { resolve, join } = require('path');
 const Proxy = require("./utils/proxy");
 const { fullParse } = require("./utils/util")
 const chalk = require("chalk")
 const { flatText } = require("./utils/message")
 const { name } = require("./utils/templates.json")
+const configFile = join(process.cwd(), "./config.json")
+if (!existsSync(configFile)) appendFileSync(configFile, JSON.stringify({ prefix: "/" }, null, 4), (err) => { if (err) return })
+const config = require(configFile)
+
 process.stdout.write("\033]0;" + name + "\007");
 
-if (!existsSync(join(process.cwd(), "./config.json"))) {
-	const { open } = require("fs")
-	open(join(process.cwd(), "./config.json"), "w", (err, file) => {
-		if (err) return;
-	})
-	const setup = { prefix: "/" }
-	writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(setup, null, 4))
-
-}
-const config = require(join(process.cwd(), "./config.json"))
-
-console.log(config);
-if (!config.username || !config.password || !config.auth) {
-	const readline = require('readline').createInterface({
-		input: process.stdin,
-		output: process.stdout
-	});
-
-	readline.question(` ! No login found\nEmail: `, email => {
-		readline.question(`Password: `, password => {
-			readline.question(`Migrated (yes/no): `, bool => {
-				const copy = config;
-				copy.username = email;
-				copy.password = password;
-				copy.auth = bool.toString().toLowerCase() === "yes" ? "microsoft" : "mojang";
-				writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(copy, null, 4))
-				console.clear();
-				readline.close();
-			})
-		})
-	})
-	readline.on("close", () => init())
-} else init();
+if (!config.username || !config.password || !config.auth) login();
+else init();
 
 function init() {
 	const user = {
@@ -51,10 +24,11 @@ function init() {
 
 	const commandFiles = readdirSync(join(__dirname, `./commands`)).filter(file => file.endsWith('.js'))
 	for (const file of commandFiles) {
-		const commandTemplate = require(resolve(join(__dirname, `./commands/${file}`)));
+		const commandPath = join(__dirname, `./commands/${file}`);
+		const commandTemplate = require(resolve(commandPath));
 		const command = new commandTemplate
 		user.commands.set(command.name, command)
-		delete require.cache[resolve(join(__dirname, `./commands/${file}`))]
+		delete require.cache[resolve(commandPath)]
 	}
 
 	// const overwrites = readdirSync(`./src/overwrite`).filter(file => file.endsWith('.js'))
@@ -74,11 +48,11 @@ function init() {
 	);
 
 	proxy.on("outgoing", (message, client, server) => {
-		const { join } = require("path");
-		const { prefix } = require(join(process.cwd(), "config.json"))
+		const { prefix } = require(configFile)
 		const args = message.slice(prefix.length).split(/ +/);
 		const commandName = args.shift().toLowerCase();
-		const command = user.commands.get(commandName) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))[0])
+		const command = user.commands.get(commandName) ||
+			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))[0])
 
 		if (!command) return
 		command.run(client, message, args, server, user)
@@ -96,20 +70,47 @@ function init() {
 		const flatClean = flat.replace(/§./g, "");
 		if (flatClean.match(/ has joined \(\d\/\d\)!/)) {
 			const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
+			// !
 			client.write("chat", { message: JSON.stringify(ign) })
 		}
 	})
 	proxy.start();
 }
 
+function login() {
+	const readline = require('readline').createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+	readline.question(chalk.redBright` ! No login found` + chalk.greenBright`\nEmail: `, email => {
+		readline.question(chalk.greenBright`Password: `, password => {
+			readline.question(chalk.greenBright`Migrated (yes/no): `, bool => {
+				const yes = ["yes", "y", "eys", "yse", ""]
+				const copy = config;
+				copy.username = email;
+				copy.password = password;
+				copy.auth = yes.includes(bool.toString().toLowerCase()) ? "microsoft" : "mojang";
+				writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(copy, null, 4))
+				console.clear();
+				readline.close();
+			})
+		})
+	})
+	readline.on("close", () => init())
+}
+
 process.on("uncaughtException", (e, o) => {
+	console.clear();
+	if (e.message.match("Invalid credentials.")) {
+		console.log(chalk.redBright`Your credentials are incorrect!`)
+		const copy = config;
+		delete copy.username;
+		delete copy.password;
+		delete copy.auth;
+		writeFileSync(configFile, JSON.stringify(copy, null, 4))
+		return login();
+	} else console.log(chalk.redBright`An error has occured\n\n`);
 	console.log(e)
-	// console.clear();
-	// console.log(chalk.redBright`Your credentials are incorrect!`)
-	// const copy = config;
-	// delete copy.username;
-	// delete copy.password;
-	// delete copy.auth;
-	// writeFileSync(join(process.cwd(), "./src/config.json"), JSON.stringify(copy, null, 4))
 	process.exit();
 })

@@ -1,6 +1,6 @@
 const Command = require('../utils/command')
 const { MessageComponent, Message } = require("../utils/message")
-const { divider, dividerWidth, colour } = require("../utils/templates.json")
+const { divider, dividerWidth, colour, failed } = require("../utils/templates.json")
 const { join } = require("path");
 const { prefix } = require(join(process.cwd(), "config.json"))
 
@@ -33,8 +33,8 @@ module.exports = class extends Command {
 			msg.forEach(msg => client.write("chat", { message: msg, position: 0, sender: "0" }))
 			return;
 		} else {
-			const command = user.commands.get(args[0]) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(args[0]))[0])
-			if (!command) return;
+			const command = user.commands.get(args[0]) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(args[0]))?.[0])
+			if (!command) return client.write("chat", { message: new Message({ text: `${failed}That command doesn't exist!` }).stringify() });
 			const msg = []
 			const divMessage = new Message({ text: divider.repeat(dividerWidth) }).stringify();
 			msg.push(divMessage)
@@ -42,7 +42,7 @@ module.exports = class extends Command {
 			const helpDesc = new MessageComponent(` ${colour}§l• Description: §r${command.description}\n`)
 			const helpExam = new MessageComponent(` ${colour}§l• Example: §r${command.example}\n`)
 				.onClick("suggest_command", `${prefix}${command.example}`)
-			const helpAlias = new MessageComponent(` ${colour}§l• Aliases: §r${command?.aliases?.join() ?? "None :("}`)
+			const helpAlias = new MessageComponent(` ${colour}§l• Aliases: §r${command?.aliases?.join() || "None :("}`)
 
 			msg.push(new Message({ components: [helpName, helpDesc, helpExam, helpAlias] }).stringify())
 			msg.push(divMessage)
