@@ -22,29 +22,23 @@ function init() {
 		mode: null
 	};
 
-	const commandFiles = readdirSync(join(__dirname, `./commands`)).filter(file => file.endsWith('.js'))
-	for (const file of commandFiles) {
-		const commandPath = join(__dirname, `./commands/${file}`);
-		const commandTemplate = require(resolve(commandPath));
-		const command = new commandTemplate
-		user.commands.set(command.name, command)
-		delete require.cache[resolve(commandPath)]
-	}
-
-	// const overwrites = readdirSync(`./src/overwrite`).filter(file => file.endsWith('.js'))
-	// for (const file of overwrites) {
-	// 	const overwriteTemplate = require(resolve(`./src/overwrite/${file}`));
-	// 	const overwrite = new overwriteTemplate
-	// 	user.overwrites.set(overwrite.game, overwrite)
-	// 	delete require.cache[resolve(`./src/overwrite/${file}`)]
-	// }
+	["commands", "overwrites"].forEach(folder => {
+		const typeFiles = readdirSync(join(__dirname, `./${folder}`)).filter(file => file.endsWith('.js'))
+		typeFiles.forEach(file => {
+			const filePath = join(__dirname, `./${folder}/${file}`);
+			const template = require(resolve(filePath));
+			const created = new template
+			user[folder].set(created?.name || created.mode, created)
+			delete require.cache[resolve(filePath)]
+		})
+	})
 
 	const proxy = new Proxy(
 		config.username,
 		config.password,
 		config.auth,
 		25565,
-		user.commands
+		user
 	);
 
 	proxy.on("outgoing", (message, client, server) => {
@@ -59,21 +53,20 @@ function init() {
 		console.log(chalk.greenBright` > ${client.username} ran ${command.name}`)
 	})
 
-	proxy.on("incoming", (msg, client, server) => {
-		msg = fullParse(msg)
-		if (msg?.text?.mode) {
-			user.lastGame = msg.text.mode.toLowerCase();
-			user.mode = msg.text.gametype.toLowerCase();
-		}
+	// proxy.on("incoming", (msg, client, server) => {
+	// 	msg = fullParse(msg)
+	// 	const flat = flatText(msg);
+	// 	const flatClean = flat.replace(/§./g, "");
 
-		const flat = flatText(msg);
-		const flatClean = flat.replace(/§./g, "");
-		if (flatClean.match(/ has joined \(\d\/\d\)!/)) {
-			const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
-			// !
-			client.write("chat", { message: JSON.stringify(ign) })
-		}
-	})
+	// 	if (flatClean.match(/ has joined \(\d\/\d\)!/)) {
+	// 		const overwrite = user.overwrites.get(user.mode);
+	// 		if (!overwrite) return;
+	// 		overwrite.overwrite(client, msg, server, user)
+	// 		const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
+	// 		// !
+	// 		client.write("chat", { message: JSON.stringify(ign) })
+	// 	}
+	// })
 	proxy.start();
 }
 

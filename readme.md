@@ -1,5 +1,5 @@
 # 🔌 HyProxy
-HyProxy is a proxy that boosts your Hypixel experience by adding new features like custom commands, in-game user statistics and more!\
+HyProxy is a proxy that boosts your Hypixel experience by adding new features like custom commands, in-game user statistics and more!
 
 ## ⚙ How to install
 Simply go to [the latest release](https://github.com/MauritsWilke/HyProxy/releases/latest) and download the executable for your OS.\
@@ -12,6 +12,10 @@ After installing just run the executable, this should spawn a terminal asking fo
 After logging in, the terminal will say ` > Proxy has been started.` after which you can connect to it by connecting to localhost in Minecraft.
 ![example of localhost](https://raw.githubusercontent.com/MauritsWilke/HyProxy/main/.github/assets/localhost.png)
 `Note: you can also add localhost as a server, it should look exactly like Hypixel`
+
+```diff
+- This application is used at your own risk
+```
 
 ## 💡 ToDo and ideas
 Any ideas can be suggested [here!](https://github.com/MauritsWilke/HyProxy/discussions/categories/ideas)
