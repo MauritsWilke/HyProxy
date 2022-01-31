@@ -17,10 +17,11 @@ module.exports = class {
 
 /* TEMPLATE
 
-const Command = require('../utils/command')
-const { MessageComponent, Message } = require("../utils/message")
-const { } = require("../utils/templates.json")
-const { } = require(join(process.cwd(), "./config.json"))
+const Command = require('../utils/classes/command')
+const { Message } = require("../utils/classes/message")
+const { join } = require("path")
+const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const design = config.config
 
 module.exports = class extends Command {
 	constructor() {

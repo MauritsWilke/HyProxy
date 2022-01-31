@@ -1,4 +1,3 @@
-const { colour } = require("./templates.json")
 const formatting = {
 	"black": "§0",
 	"dark_blue": "§1",
@@ -63,22 +62,24 @@ function validateStyles(style) {
 }
 
 function toFormatting(obj) {
-	let flattened = obj?.text || "";
-	if (!obj?.extra) return flattened
+	const exclude = ["text", "clickEvent", "hoverEvent"]
+	let formatted = obj?.text || "";
+	if (!obj?.extra) return formatted
 
 	for (const entry of obj.extra) {
 		let str = "";
 		for (const [style, value] of Object.entries(entry)) {
 			if (style === "color") str += formatting[value]
-			else if (style !== "text" && value) str += formatting[style]
+			else if (!exclude.includes(style) && value) str += formatting[style]
 		}
-		flattened += str + entry.text
-	} return flattened
+		formatted += str + entry.text + "§r"
+	} return formatted
 }
 
 class Message {
 	constructor(text, styling = {}) {
 		if (!validateStyles(styling)) throw new Error("Invalid styling")
+		this.styling = styling;
 		this.message = {
 			text: "",
 			extra: [
@@ -97,6 +98,7 @@ class Message {
 	addText(text, styling) {
 		this.message.extra.push({
 			"text": text,
+			...this.styling,
 			...styling
 		})
 		return this
@@ -112,20 +114,25 @@ class Message {
 		return this
 	}
 
-	onHover(title, fields = []) {
-		if (fields) fields = `\n${fields.join("\n")}`
-		title = title.split(/(§.)/g);
-		title.splice(title.length - 1, 0, "§l");
-		this.message.extra[this.message.extra.length - 1].hoverEvent = {
-			"action": "show_text",
-			"value": `${title.join("")}${fields}`,
+	onHover(text, amount = 1) {
+		if (amount > this.message.extra.length) amount = this.message.extra.length
+		while (amount) {
+			this.message.extra[this.message.extra.length - amount].hoverEvent = {
+				"action": "show_text",
+				"value": text,
+			}
+			amount--
 		}
 		return this
 	}
 
-	onClick(type, value) {
-		if (!["open_url", "run_command", "suggest_command", "copy_to_clipboard"].includes(type)) throw new Error("Invalid type")
-		this.message.extra[this.message.extra.length - 1].clickEvent = { action: type, value: value }
+	onClick(type, value, amount = 1) {
+		if (amount > this.message.extra.length) amount = this.message.extra.length
+		while (amount) {
+			if (!["open_url", "run_command", "suggest_command", "copy_to_clipboard"].includes(type)) throw new Error("Invalid type")
+			this.message.extra[this.message.extra.length - amount].clickEvent = { action: type, value: value }
+			amount--
+		}
 		return this
 	}
 
@@ -135,53 +142,57 @@ class Message {
 	}
 }
 
-/**
- * @deprecated
- */
-class MessageComponent {
-	constructor(text) {
-		this.message = {
-			text: text,
+class Card {
+	constructor(title, titleStyle, nameStyle, statStyle) {
+		titleStyle = {
+			color: "yellow",
+			bold: true,
+			underlined: true,
+			...titleStyle
 		}
+		this.nameStyle = {
+			color: "gray",
+			bold: true,
+			...nameStyle
+		};
+		this.statStyle = {
+			color: "white",
+			...statStyle
+		}
+
+		this.card = new Message(title, titleStyle)
+		this.fields = [];
 	}
 
-	onHover(title, fields = []) {
-		if (fields) fields = `\n${fields.join(`\n§r`)}`
-		title = title.split(/(§.)/g);
-		title.splice(title.length - 1, 0, "§l");
-		this.message['hoverEvent'] = {
-			"action": "show_text",
-			"value": `${title.join("")}${fields}`
-		}
+	addField(name = "", value = "", nameStyle, statStyle) {
+		const field = new Message()
+			.addText(name, { ...this.nameStyle, ...nameStyle })
+			.addText(value, { ...this.statStyle, ...statStyle }).classic();
+		this.fields.push(field)
+		return this;
+	}
+
+	addLine(text, style) {
+		this.fields.push(new Message(text, style).classic())
 		return this
 	}
 
-	onClick(type, value) {
-		this.message['clickEvent'] = {
-			action: type,
-			value: value
-		}
-		return this
+	classic() {
+		const cardClassic = this.card.classic();
+		let fieldsClassic = this.fields.join("\n");
+		return `${cardClassic}\n${fieldsClassic}`
+	}
+
+	json() {
+		const cardJson = this.card.json();
+		this.fields.forEach(field => cardJson.extra.push({ text: field }))
+		return cardJson
 	}
 }
 
-const testMsg = new Message()
-	.addText("This is a test", { color: "red", bold: true })
-	.onHover(new Message("Cool hover :3", { color: "red", bold: false }).classic(), [
-		new Message("Testing", { color: "blue", underlined: true })
-			.newLine()
-			.addText("Testing", { color: "red", bold: true, obfuscated: true })
-			.classic(),
-	])
-	.onClick("suggest_command", "/play bedwars_eight_two")
-	.insertion("lmfao sike")
-	.addText("green text :D", { color: "green" })
-	.stringify();
-
 module.exports = {
-	MessageComponent,
-	flatText: toFormatting,
 	Message,
+	Card,
 	toFormatting,
-	testMsg
+	validateStyles
 }

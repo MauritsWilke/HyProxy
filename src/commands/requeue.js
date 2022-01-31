@@ -1,12 +1,14 @@
-const Command = require('../utils/command')
-const { MessageComponent, Message } = require("../utils/message")
-const { colour } = require("../utils/templates.json")
+const Command = require('../utils/classes/command')
+const { Message } = require("../utils/classes/message")
+const { join } = require("path")
+const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const design = config.config
 
 module.exports = class extends Command {
 	constructor() {
 		super({
 			name: "requeue",
-			description: "Requeue the last game you played!",
+			description: "Requeue the last game you joined",
 			example: "requeue",
 			aliases: [
 				"rq"
@@ -15,10 +17,10 @@ module.exports = class extends Command {
 	}
 
 	async run(client, message, args, server, user) {
-		if (!user.lastGame) {
-			const msg = new Message({ text: `${colour}You haven't played any games yet!` }).stringify()
+		if (!user.mode) {
+			const msg = new Message(`You haven't played any games yet!`, { color: design.colours.failed }).stringify()
 			client.write("chat", { message: msg })
 		}
-		else server.write("chat", { message: `/play ${user.lastGame}` })
+		else server.write("chat", { message: `/play ${user.mode}` })
 	}
 }

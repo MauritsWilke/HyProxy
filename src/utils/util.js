@@ -1,4 +1,4 @@
-function fullParse(obj) {
+function deepParse(obj) {
 	if (typeof obj === "string") try {
 		obj = JSON.parse(obj)
 	} catch (e) {
@@ -8,7 +8,7 @@ function fullParse(obj) {
 		([key, value]) => {
 			try {
 				obj[key] = JSON.parse(value)
-				obj[key] = fullParse(obj[key])
+				obj[key] = deepParse(obj[key])
 			} catch (e) { }
 		}
 	);
@@ -16,5 +16,5 @@ function fullParse(obj) {
 }
 
 module.exports = {
-	fullParse
+	deepParse
 }

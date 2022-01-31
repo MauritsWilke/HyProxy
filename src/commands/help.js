@@ -1,53 +1,41 @@
-const Command = require('../utils/command')
-const { MessageComponent, Message } = require("../utils/message")
-const { divider, dividerWidth, colour, failed } = require("../utils/templates.json")
-const { join } = require("path");
-const { prefix } = require(join(process.cwd(), "config.json"))
-
+const Command = require('../utils/classes/command')
+const { Message, Card } = require("../utils/classes/message")
+const { join } = require("path")
+const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const design = config.config
 
 module.exports = class extends Command {
 	constructor() {
 		super({
 			name: "help",
-			description: "Lists all commands or shows info for a specific command",
-			example: "help requeue"
+			description: "Get help with HyProxy commands!",
+			example: "help requeue",
+			aliases: [
+
+			]
 		})
 	}
 
 	async run(client, message, args, server, user) {
 		if (args.length === 0) {
-			const msg = []
-			const divMessage = new Message({ text: divider.repeat(dividerWidth) }).stringify();
-			msg.push(divMessage)
+			let msg = new Message(`-------------------- Help --------------------`, { color: design.colours.default, bold: true });
 			for (const command of user.commands.values()) {
-				const helpName = new MessageComponent(` ${colour}§l• ${command.name} `)
-					.onHover(`${colour}${command.name}`, [`${colour}${command.example}`])
-					.onClick("run_command", `${prefix}help ${command.name}`);
+				const capitalName = command.name.charAt(0).toUpperCase() + command.name.slice(1)
+				const helpCard = new Card(capitalName)
+					.addField(`Description: `, command.description)
+					.addField(`Example: `, command.example)
+					.addField(`Aliases: `, command.aliases.join() || "None")
+					.classic();
 
-				const helpDesc = new MessageComponent(command.description);
-				const helpMessage = new Message({ components: [helpName, helpDesc] }).stringify();
-				msg.push(helpMessage)
+				msg.newLine();
+				msg.addText(" » ", { bold: false })
+					.addText(`${capitalName}: `, { bold: true })
+					.addText(command.description, { bold: false })
+					.onHover(helpCard, 3)
+					.onClick("suggest_command", `${user.prefix}help ${command.name}`, 3)
 			}
-			msg.push(divMessage)
-
-			msg.forEach(msg => client.write("chat", { message: msg, position: 0, sender: "0" }))
-			return;
-		} else {
-			const command = user.commands.get(args[0]) || user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(args[0]))?.[0])
-			if (!command) return client.write("chat", { message: new Message({ text: `${failed}That command doesn't exist!` }).stringify() });
-			const msg = []
-			const divMessage = new Message({ text: divider.repeat(dividerWidth) }).stringify();
-			msg.push(divMessage)
-			const helpName = new MessageComponent(` ${colour}§l• Name: §r${command.name}\n`)
-			const helpDesc = new MessageComponent(` ${colour}§l• Description: §r${command.description}\n`)
-			const helpExam = new MessageComponent(` ${colour}§l• Example: §r${command.example}\n`)
-				.onClick("suggest_command", `${prefix}${command.example}`)
-			const helpAlias = new MessageComponent(` ${colour}§l• Aliases: §r${command?.aliases?.join() || "None :("}`)
-
-			msg.push(new Message({ components: [helpName, helpDesc, helpExam, helpAlias] }).stringify())
-			msg.push(divMessage)
-
-			msg.forEach(msg => client.write("chat", { message: msg, position: 0, sender: "0" }))
+			msg.newLine().addText("-".repeat(45));
+			return client.write("chat", { message: msg.stringify() })
 		}
 	}
 }

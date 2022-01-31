@@ -1,11 +1,9 @@
 const { readdirSync, writeFileSync, existsSync, appendFileSync } = require("fs")
 const { resolve, join } = require('path');
-const Proxy = require("./utils/proxy");
-const { fullParse } = require("./utils/util")
+const Proxy = require("./utils/classes/proxy");
 const chalk = require("chalk")
-const { flatText } = require("./utils/message")
-const { name } = require("./utils/templates.json")
-const configFile = join(process.cwd(), "./config.json")
+const { name } = require("./utils/settings.json")
+const configFile = join(process.cwd(), "./HyProxyConfig.json")
 if (!existsSync(configFile)) appendFileSync(configFile, JSON.stringify({ prefix: "/" }, null, 4), (err) => { if (err) return })
 const config = require(configFile)
 
@@ -19,7 +17,8 @@ function init() {
 		commands: new Map(),
 		overwrites: new Map(),
 		lastGame: null,
-		mode: null
+		mode: null,
+		prefix: config.prefix ?? "/"
 	};
 
 	["commands", "overwrites"].forEach(folder => {
@@ -42,8 +41,7 @@ function init() {
 	);
 
 	proxy.on("outgoing", (message, client, server) => {
-		const { prefix } = require(configFile)
-		const args = message.slice(prefix.length).split(/ +/);
+		const args = message.slice(user.prefix.length).split(/ +/);
 		const commandName = args.shift().toLowerCase();
 		const command = user.commands.get(commandName) ||
 			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))[0])
@@ -53,20 +51,6 @@ function init() {
 		console.log(chalk.greenBright` > ${client.username} ran ${command.name}`)
 	})
 
-	// proxy.on("incoming", (msg, client, server) => {
-	// 	msg = fullParse(msg)
-	// 	const flat = flatText(msg);
-	// 	const flatClean = flat.replace(/§./g, "");
-
-	// 	if (flatClean.match(/ has joined \(\d\/\d\)!/)) {
-	// 		const overwrite = user.overwrites.get(user.mode);
-	// 		if (!overwrite) return;
-	// 		overwrite.overwrite(client, msg, server, user)
-	// 		const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
-	// 		// !
-	// 		client.write("chat", { message: JSON.stringify(ign) })
-	// 	}
-	// })
 	proxy.start();
 }
 
@@ -79,12 +63,12 @@ function login() {
 	readline.question(chalk.redBright` ! No login found` + chalk.greenBright`\nEmail: `, email => {
 		readline.question(chalk.greenBright`Password: `, password => {
 			readline.question(chalk.greenBright`Migrated (yes/no): `, bool => {
-				const yes = ["yes", "y", "eys", "yse", ""]
+				const yes = ["yes", "y", "eys", "yse", "yea"] // Honestly they should just follow orders instructions
 				const copy = config;
 				copy.username = email;
 				copy.password = password;
 				copy.auth = yes.includes(bool.toString().toLowerCase()) ? "microsoft" : "mojang";
-				writeFileSync(join(process.cwd(), "./config.json"), JSON.stringify(copy, null, 4))
+				writeFileSync(configFile, JSON.stringify(copy, null, 4))
 				console.clear();
 				readline.close();
 			})
@@ -94,7 +78,7 @@ function login() {
 }
 
 process.on("uncaughtException", (e, o) => {
-	console.clear();
+	// console.clear();
 	if (e.message.match("Invalid credentials.")) {
 		console.log(chalk.redBright`Your credentials are incorrect!`)
 		const copy = config;
