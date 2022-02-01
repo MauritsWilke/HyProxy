@@ -1,11 +1,12 @@
+const chalk = require("chalk")
 const { readdirSync, writeFileSync, existsSync, appendFileSync } = require("fs")
 const { resolve, join } = require('path');
-const Proxy = require("./utils/classes/proxy");
-const chalk = require("chalk")
-const { name } = require("./utils/settings.json")
-const configFile = join(process.cwd(), "./HyProxyConfig.json")
-if (!existsSync(configFile)) appendFileSync(configFile, JSON.stringify({ prefix: "/" }, null, 4), (err) => { if (err) return })
+const { name, configTemplate } = require("./utils/settings.json")
+const configFile = join(process.cwd(), "HyProxyConfig.json")
+if (!existsSync(configFile)) appendFileSync(configFile, JSON.stringify(configTemplate, null, 4), (err) => { if (err) return })
 const config = require(configFile)
+
+const Proxy = require("./utils/classes/proxy");
 
 process.stdout.write("\033]0;" + name + "\007");
 

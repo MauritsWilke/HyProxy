@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { getUUID, getUsername } = require('./mojang.js');
 const { join } = require("path")
-const { apiKey } = require(join(process.cwd(), "./HyProxyConfig.json"))
+let { apiKey } = require(join(process.cwd(), "./HyProxyConfig.json"))
 const Cache = require("./cache")
 
 const BASE_KEY = "https://api.hypixel.net"
@@ -21,11 +21,16 @@ module.exports = {
 	getActiveBoosters,
 	playerCounts,
 	getPunishments,
-	clearCache
+	clearCache,
+	setKey
 }
 
-async function keyInfo() {
-	const response = await fetch(`${BASE_KEY}/key?&key=${apiKey}`);
+function setKey(key) {
+	apiKey = key;
+}
+
+async function keyInfo(key) {
+	const response = await fetch(`${BASE_KEY}/key?&key=${key || apiKey}`);
 	if (!response.ok) return Promise.reject(`${response.status} ${response.statusText}`);
 	const r = await response.json();
 	return r.record;
@@ -33,12 +38,11 @@ async function keyInfo() {
 
 async function playerStats(player, gamemode) {
 	if (!player) return Promise.reject(`This function requires an input`);
-	const UUID = player.length < 16 ? uuidCache.get(player) || uuidCache.set(player, await getUUID(player)).value : player;
+	const UUID = player.length <= 16 ? uuidCache.get(player) || await getUUID(player).then(r => uuidCache.set(player, r).value) : player;
 	const response = await fetch(`${BASE_KEY}/player?uuid=${UUID}&key=${apiKey}`);
 	if (!response.ok) return Promise.reject(`${response.status} ${response.statusText}`);
 	const json = await response.json();
 	return gamemode ? json.player.stats[gamemode] : json.player;
-
 }
 
 async function friendList(player) {
@@ -49,7 +53,7 @@ async function friendList(player) {
 
 async function recentGames(player) {
 	if (!player) return Promise.reject(`This function requires an input`);
-	const UUID = player.length < 16 ? uuidCache.get(player) || uuidCache.set(player, await getUUID(player)).value : player;
+	const UUID = player.length <= 16 ? uuidCache.get(player) || await getUUID(player).then(r => uuidCache.set(player, r).value) : player;
 	const response = await fetch(`${BASE_KEY}/recentgames?uuid=${UUID}&key=${apiKey}`);
 	const r = await response.json();
 	return r.games;
@@ -57,7 +61,7 @@ async function recentGames(player) {
 
 async function playerStatus(player) {
 	if (!player) return Promise.reject(`This function requires an input`);
-	const UUID = player.length < 16 ? uuidCache.get(player) || uuidCache.set(player, await getUUID(player)).value : player;
+	const UUID = player.length <= 16 ? uuidCache.get(player) || await getUUID(player).then(r => uuidCache.set(player, r).value) : player;
 	const response = await fetch(`${BASE_KEY}/status?uuid=${UUID}&key=${apiKey}`);
 	if (!response.ok) return Promise.reject(`${response.status} ${response.statusText}`);
 	const json = await response.json();
@@ -120,7 +124,7 @@ async function clearCache() {
 
 async function getFriendList(player) {
 	let friendList = new Map()
-	const UUID = player.length < 16 ? uuidCache.get(player) || uuidCache.set(player, await getUUID(player)).value : player;
+	const UUID = player.length <= 16 ? uuidCache.get(player) || await getUUID(player).then(r => uuidCache.set(player, r).value) : player;
 	const response = await fetch(`${BASE_KEY}/friends?uuid=${UUID}&key=${apiKey}`);
 	if (!response.ok) return Promise.reject(`${response.status} ${response.statusText}`);
 	const { records } = await response.json();
@@ -133,7 +137,7 @@ async function getFriendList(player) {
 }
 
 async function getPlayerGuild(player) {
-	const UUID = player.length < 16 ? uuidCache.get(player) || uuidCache.set(player, await getUUID(player)).value : player;
+	const UUID = player.length <= 16 ? uuidCache.get(player) || await getUUID(player).then(r => uuidCache.set(player, r).value) : player;
 	const response = await fetch(`${BASE_KEY}/guild?player=${UUID}&key=${apiKey}`);
 	if (!response.ok) return Promise.reject(`${response.status} ${response.statusText}`);
 	const json = await response.json();

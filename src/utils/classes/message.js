@@ -115,7 +115,7 @@ class Message {
 	}
 
 	onHover(text, amount = 1) {
-		if (amount > this.message.extra.length) amount = this.message.extra.length
+		if (amount > this.message.extra.length || amount === "all") amount = this.message.extra.length
 		while (amount) {
 			this.message.extra[this.message.extra.length - amount].hoverEvent = {
 				"action": "show_text",
@@ -127,7 +127,7 @@ class Message {
 	}
 
 	onClick(type, value, amount = 1) {
-		if (amount > this.message.extra.length) amount = this.message.extra.length
+		if (amount > this.message.extra.length || amount === "all") amount = this.message.extra.length
 		while (amount) {
 			if (!["open_url", "run_command", "suggest_command", "copy_to_clipboard"].includes(type)) throw new Error("Invalid type")
 			this.message.extra[this.message.extra.length - amount].clickEvent = { action: type, value: value }

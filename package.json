@@ -9,10 +9,12 @@
 		"@types/node": "^17.0.13"
 	},
 	"scripts": {
-		"build": "pkg src/index.js -c package.json --debug"
+		"build": "pkg src/index.js -c package.json"
 	},
 	"pkg": {
-		"scripts": "./src/**/*.js",
+		"scripts": [
+			"./src/**/**/*.js"
+		],
 		"assets": "./src/**/*",
 		"outputPath": "dist"
 	}

@@ -3,7 +3,8 @@ const chalk = require("chalk");
 const EventEmitter = require("events");
 const { join } = require("path");
 const { deepParse } = require("../util")
-const { toFormatting, Message } = require("./message")
+const { toFormatting, Message, Card } = require("./message")
+const settings = require("../settings.json")
 const configPath = join(process.cwd(), "HyProxyConfig.json")
 const config = require(configPath)
 const design = config.config;
@@ -45,6 +46,7 @@ class Proxy extends EventEmitter {
 
 			let endedClient = false;
 			let endedTargetClient = false;
+			let warnedOverwrite = false;
 
 			["end", "error"].forEach(event => {
 				client.on(event, () => {
@@ -74,7 +76,7 @@ class Proxy extends EventEmitter {
 				[
 					`-`.repeat(53),
 					`  Welcome, ${client.username}`,
-					`  Connected to Hypixel through ${config.name}`,
+					`  Connected to Hypixel through ${settings.name}`,
 					`  Run ${config.prefix}help to see the commands`,
 					`-`.repeat(53),
 				].forEach(msg => {
@@ -82,39 +84,6 @@ class Proxy extends EventEmitter {
 					client.write("chat", { message: message })
 				})
 			}, 2000)
-
-			//#region 
-			// setTimeout(() => {
-			// 	if (!config?.apiKey) {
-			// 		const msg = new Message(`No API key found`, { color: design.colours.failed })
-			// 			.newLine()
-			// 			.addText("Please set one by running ")
-			// 			.addText("/setkey ")
-			// 			.onClick("suggest_command", "/setkey")
-			// 			.onHover(new Message("/setkey", { color: design.colours.default }).classic())
-			// 			.newLine()
-			// 			.addText('<your API key>')
-			// 			.onClick("suggest_command", "/api new")
-			// 			.onHover(
-			// 				new Message("Hypixel API key", {})
-			// 			)
-
-			// 	}
-
-
-			// 	const text = new MessageComponent(`${templates.failed}No api key found!\n${templates.failed}Please set one by running `)
-			// 	const hoverComp = new MessageComponent(`${templates.failed}/setkey `)
-			// 		.onClick("suggest_command", "/setkey")
-			// 		.onHover("§c/setkey")
-			// 	const apiComp = new MessageComponent(`${templates.failed}<your api key>`)
-			// 		.onClick("suggest_command", "/api new")
-			// 		.onHover(`§aHypixel API key`, [`§aThis key is used to request from the Hypixel API`, `§aGenerate a new one by running /api new`])
-			// 	const msg = new Message({ components: [text, hoverComp, apiComp] }).stringify();
-			// 	if (!apiKey) {
-			// 		client.write("chat", { message: msg, position: 0 })
-			// 	}
-			// }, 5000)
-			//#endregion
 
 			setInterval(() => {
 				hypixel.write("chat", { message: `/locraw` })
@@ -152,11 +121,41 @@ class Proxy extends EventEmitter {
 
 					const classicStyle = toFormatting(parsed);
 					const flatClean = classicStyle.replace(/§./g, "");
-
 					const overwrite = this.user.overwrites.get(this.user.gametype);
-					if (overwrite && flatClean.match(/ has joined \(\d\/\d\)!/)) {
-						const ign = flatClean.replace(/ has joined \(\d\/\d\)!/, "");
-						return overwrite.overwrite(client, parsed, classicStyle, flatClean, ign)
+
+					if (overwrite && flatClean.match(/ has joined \(\d{1,2}\/\d{1,2}\)!/)) {
+						if (config.apiKey) {
+							const ign = flatClean.replace(/ has joined \(\d{1,2}\/\d{1,2}\)!/, "");
+							const styledIGN = classicStyle.replace(/ has joined.*/, "")
+							return overwrite.overwrite(client, parsed, classicStyle, flatClean, ign, styledIGN)
+						} else if (!warnedOverwrite) {
+							warnedOverwrite = true;
+							const apiKeyCard = new Card("Hypixel API key")
+								.addLine("This API key is used to fetch data from the Hypixel API")
+								.addLine("You can (re)generate one by running /api new")
+								.addLine("Warning: regenerating your key will void the old one", { color: "dark_red" })
+								.classic();
+
+							const msg = new Message(`Overwrites don't work without an API key!`, { color: design.colours.failed })
+								.newLine()
+								.addText("Please set one by running ")
+								.addText("/setkey ")
+								.onClick("suggest_command", "/setkey")
+								.addText('<your API key>')
+								.onClick("suggest_command", "/api new")
+								.onHover(apiKeyCard)
+								.stringify();
+							client.write("chat", { message: msg })
+						}
+					}
+
+					if (overwrite && flatClean.match("ONLINE")) {
+						const players = classicStyle.replace("§l§bONLINE: ", "").split(", ")
+						players.forEach(player => {
+							const ign = player.replace(/§./g, "");
+							overwrite.overwrite(client, parsed, classicStyle, flatClean, ign, player)
+						})
+						return
 					}
 				}
 
