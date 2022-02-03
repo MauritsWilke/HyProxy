@@ -2,10 +2,13 @@ const chalk = require("chalk")
 const { readdirSync, writeFileSync, existsSync, appendFileSync } = require("fs")
 const { resolve, join } = require('path');
 const { name, configTemplate } = require("./utils/settings.json")
-const configFile = join(process.cwd(), "HyProxyConfig.json")
-if (!existsSync(configFile)) appendFileSync(configFile, JSON.stringify(configTemplate, null, 4), (err) => { if (err) return })
-const config = require(configFile)
 
+const configFile = join(process.cwd(), "HyProxyConfig.json")
+const customCommands = join(process.cwd(), "modules")
+process.env.MODULES = customCommands
+process.env.CONFIG_FILE = configFile;
+if (!existsSync(configFile)) appendFileSync(process.env.CONFIG_FILE, JSON.stringify(configTemplate, null, 4), (err) => { if (err) return })
+const config = require(process.env.CONFIG_FILE)
 const Proxy = require("./utils/classes/proxy");
 
 process.stdout.write("\033]0;" + name + "\007");
@@ -32,6 +35,17 @@ function init() {
 			delete require.cache[resolve(filePath)]
 		})
 	})
+
+	if (existsSync(process.env.MODULES)) {
+		const customFiles = readdirSync(process.env.MODULES).filter(file => file.endsWith(".js"))
+		customFiles.forEach(file => {
+			const filePath = join(process.env.MODULES, `/${file}`);
+			const template = require(resolve(filePath));
+			const created = new template
+			user.commands.set(created?.name || created.mode, created)
+			delete require.cache[resolve(filePath)]
+		})
+	}
 
 	const proxy = new Proxy(
 		config.username,

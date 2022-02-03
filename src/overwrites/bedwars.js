@@ -3,7 +3,7 @@ const { Message, Card } = require("../utils/classes/message");
 const { playerStats } = require("../utils/api/hypixel")
 const starColours = require("../utils/api/json//starColours.json")
 const { join } = require("path")
-const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const config = require(process.env.CONFIG_FILE)
 const design = config.config
 
 module.exports = class extends Overwrite {

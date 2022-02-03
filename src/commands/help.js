@@ -1,7 +1,6 @@
 const Command = require('../utils/classes/command')
 const { Message, Card } = require("../utils/classes/message")
-const { join } = require("path")
-const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const config = require(process.env.CONFIG_FILE)
 const design = config.config
 
 module.exports = class extends Command {
@@ -22,9 +21,9 @@ module.exports = class extends Command {
 			for (const command of user.commands.values()) {
 				const capitalName = command.name.charAt(0).toUpperCase() + command.name.slice(1)
 				const helpCard = new Card(capitalName)
-					.addField(`Description: `, command.description)
-					.addField(`Example: `, command.example)
-					.addField(`Aliases: `, command.aliases.join() || "None")
+					.addField(`Description: `, command?.description)
+					.addField(`Example: `, command?.example)
+					.addField(`Aliases: `, command?.aliases?.join() || "None")
 					.classic();
 
 				msg.newLine();

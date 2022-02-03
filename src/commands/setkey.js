@@ -2,7 +2,7 @@ const Command = require('../utils/classes/command')
 const { Message } = require("../utils/classes/message")
 const { writeFileSync } = require("fs")
 const { join } = require("path")
-const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const config = require(process.env.CONFIG_FILE)
 const { keyInfo, setKey } = require("../utils/api/hypixel")
 const design = config.config
 
@@ -27,7 +27,7 @@ module.exports = class extends Command {
 				const info = await keyInfo(args[0]);
 				config.apiKey = info.key;
 				setKey(info.key)
-				writeFileSync(join(process.cwd(), "HyProxyConfig.json"), JSON.stringify(config, null, 4))
+				writeFileSync(process.env.CONFIG_FILE, JSON.stringify(config, null, 4))
 				const msg = new Message("Successfully set API key!", { color: design.colours.success }).stringify();
 				client.write("chat", { message: msg })
 			} catch (e) {

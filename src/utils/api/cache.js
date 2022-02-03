@@ -35,7 +35,7 @@ class Cache {
 		const cached = this.#cache[key]
 		if (!cached) return null
 		if (Date.now() > cached.expiration) {
-			this.delete(key)
+			delete this.#cache[key]
 			return null;
 		}
 		return unreduced ? cached : cached.value

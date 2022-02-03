@@ -1,7 +1,7 @@
 const fetch = require('node-fetch');
 const { getUUID, getUsername } = require('./mojang.js');
-const { join } = require("path")
-let { apiKey } = require(join(process.cwd(), "./HyProxyConfig.json"))
+//let { apiKey } = require(process.env.CONFIG_FILE)
+let apiKey = "fe0d2eac-e9fa-42d2-a1e9-2ecd8ec215a8"
 const Cache = require("./cache")
 
 const BASE_KEY = "https://api.hypixel.net"

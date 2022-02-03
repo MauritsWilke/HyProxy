@@ -1,7 +1,7 @@
 const Command = require('../utils/classes/command')
 const { Message } = require("../utils/classes/message")
 const { join } = require("path")
-const config = require(join(process.cwd(), "HyProxyConfig.json"))
+const config = require(process.env.CONFIG_FILE)
 const design = config.config
 
 module.exports = class extends Command {

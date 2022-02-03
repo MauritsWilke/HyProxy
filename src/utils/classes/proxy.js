@@ -1,12 +1,10 @@
 const { createServer, createClient, states, ping } = require("minecraft-protocol");
 const chalk = require("chalk");
 const EventEmitter = require("events");
-const { join } = require("path");
 const { deepParse } = require("../util")
 const { toFormatting, Message, Card } = require("./message")
-const settings = require("../settings.json")
-const configPath = join(process.cwd(), "HyProxyConfig.json")
-const config = require(configPath)
+const settings = require("../settings.json");
+const config = require(process.env.CONFIG_FILE)
 const design = config.config;
 
 class Proxy extends EventEmitter {
@@ -29,7 +27,7 @@ class Proxy extends EventEmitter {
 			version: "1.8.9",
 			motd: realHypixel.description,
 			favicon: realHypixel.favicon,
-			maxPlayers: realHypixel.players.max
+			maxPlayers: realHypixel.players.max,
 		})
 		localhost.playerCount = realHypixel.players.online;
 
@@ -85,32 +83,27 @@ class Proxy extends EventEmitter {
 				})
 			}, 2000)
 
-			setInterval(() => {
-				hypixel.write("chat", { message: `/locraw` })
-			}, 5000)
-
 			client.on("packet", (data, meta, buffer) => {
-
-				let preventSend = false;
 				const serialized = client.deserializer.parsePacketBuffer(buffer)
 				if (serialized?.data?.name === "chat") {
 					const msg = serialized.data.params.message;
-
 					if (msg.startsWith(this.user.prefix)) {
 						const commandName = msg.split(/ +/)[0].slice(this.user.prefix.length).toLowerCase();
 						const command = this.user.commands.get(commandName) || [...this.user.commands].find(command => command[1]?.aliases?.includes(commandName))
 						if (command) {
-							preventSend = true;
 							this.emit("outgoing", msg, client, hypixel)
+							return;
 						}
 					}
 				}
 
-				if (hypixel.state === states.PLAY && meta.state === states.PLAY && !endedTargetClient && !preventSend) hypixel.write(meta.name, data);
+				if (hypixel.state === states.PLAY && meta.state === states.PLAY && !endedTargetClient) hypixel.write(meta.name, data);
 			});
 
 			hypixel.on("packet", (data, meta, buffer) => {
 				const serialized = hypixel.deserializer.parsePacketBuffer(buffer);
+				if (serialized.data.name === "login") hypixel.write("chat", { message: `/locraw` })
+
 				if (serialized?.data?.name === "chat") {
 					this.emit("incoming", serialized.data.params.message, client, hypixel)
 
