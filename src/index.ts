@@ -1,10 +1,14 @@
 import { User, HyProxy } from "./utils/classes/HyProxy";
-import config from "./HyProxyConfig.json"
-import { readdirSync, writeFileSync } from "fs";
+import { appendFileSync, existsSync, readdirSync, writeFileSync } from "fs";
 import Command from "./utils/classes/command";
 import chalk from "chalk";
 import { Client, ServerClient } from "minecraft-protocol";
 import { join } from "path";
+import { configTemplate } from "./utils/settings.json"
+
+const configPath = "./HyProxyConfig.json"
+if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
+import config from "./HyProxyConfig.json"
 
 if (!('username' in config) || !('password' in config) || !('auth' in config)) login();
 else init();

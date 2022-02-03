@@ -1,0 +1,15 @@
+{
+	"_comment": "These settings are hardcoded and shouldn't be change-able in the config file",
+	"name": "HyProxy",
+	"configTemplate": {
+		"prefix": "/",
+		"config": {
+			"colours": {
+				"default": "aqua",
+				"success": "green",
+				"failed": "red"
+			},
+			"joinIcon": "»"
+		}
+	}
+}
