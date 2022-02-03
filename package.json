@@ -1,21 +1,9 @@
 {
-	"main": "src/index.js",
 	"dependencies": {
 		"chalk": "^4.1.2",
-		"minecraft-protocol": "^1.30.0",
-		"node-fetch": "^2.6.7"
+		"minecraft-protocol": "^1.30.0"
 	},
 	"devDependencies": {
-		"@types/node": "^17.0.13"
-	},
-	"scripts": {
-		"build": "pkg src/index.js -c package.json"
-	},
-	"pkg": {
-		"scripts": [
-			"./src/**/**/*.js"
-		],
-		"assets": "./src/**/*",
-		"outputPath": "dist"
+		"@types/node": "^17.0.14"
 	}
 }

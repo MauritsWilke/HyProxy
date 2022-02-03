@@ -1,0 +1,17 @@
+{
+	"compilerOptions": {
+		"target": "esnext",
+		"watch": true,
+		"strict": true,
+		"outDir": "dist",
+		"module": "CommonJS",
+		"removeComments": true,
+		"pretty": true,
+		"esModuleInterop": true,
+		"resolveJsonModule": true,
+		"noImplicitAny": true
+	},
+	"include": [
+		"src/**/*"
+	],
+}

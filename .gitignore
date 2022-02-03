@@ -1,4 +1,5 @@
+OLD/
 node_modules/
-inStream.txt
-HyProxyConfig.json
 dist/
+build/
+src/HyProxyConfig.json
