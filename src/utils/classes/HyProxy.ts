@@ -28,7 +28,7 @@ export class HyProxy extends EventEmitter {
 		})
 
 		const realHypixel = {
-			motd: 'description' in hyPing ? hyPing.description : hyPing.motd,
+			motd: 'description' in hyPing ? typeof hyPing.description === "string" ? hyPing.description : hyPing.description.text : hyPing.motd,
 			favicon: 'favicon' in hyPing ? hyPing.favicon : "",
 			maxPlayers: 'maxPlayers' in hyPing ? hyPing.maxPlayers : hyPing.players.max,
 			playerCount: 'playerCount' in hyPing ? hyPing.playerCount : hyPing.players.online
@@ -41,6 +41,7 @@ export class HyProxy extends EventEmitter {
 			version: "1.8.9",
 			favicon: realHypixel.favicon,
 			maxPlayers: realHypixel.maxPlayers,
+			motd: realHypixel.motd
 		})
 		localhost.playerCount = realHypixel.playerCount
 
