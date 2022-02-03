@@ -1,12 +1,38 @@
 import { User, HyProxy } from "./utils/classes/HyProxy";
 import config from "./HyProxyConfig.json"
-import { readdirSync } from "fs";
+import { readdirSync, writeFileSync } from "fs";
 import Command from "./utils/classes/command";
 import chalk from "chalk";
 import { Client, ServerClient } from "minecraft-protocol";
 import { join } from "path";
 
-function init() {
+if (!('username' in config) || !('password' in config) || !('auth' in config)) login();
+else init();
+
+function login(): void {
+	const readline = require('readline').createInterface({
+		input: process.stdin,
+		output: process.stdout
+	});
+
+	readline.question(chalk.redBright` ! No login found` + chalk.greenBright`\nEmail: `, (email: string) => {
+		readline.question(chalk.greenBright`Password: `, (password: string) => {
+			readline.question(chalk.greenBright`Migrated (yes/no): `, (answer: string) => {
+				const yes: string[] = ["yes", "y", "eys", "yse", "yea"] // Honestly they should just follow orders instructions
+				let copy: any = config;
+				copy.username = email;
+				copy.password = password;
+				copy.auth = yes.includes(answer.toString().toLowerCase()) ? "microsoft" : "mojang";
+				writeFileSync(join(__dirname, `HyProxyConfig.json`), JSON.stringify(copy, null, 4))
+				console.clear();
+				readline.close();
+			})
+		})
+	})
+	readline.on("close", () => init())
+}
+
+function init(): void {
 	const user: User = {
 		commands: new Map<string, Command>(),
 		overwrites: new Map(),
@@ -26,9 +52,9 @@ function init() {
 	})
 
 	const proxy = new HyProxy(
-		config.username,
-		config.password,
-		config.auth === "mojang" ? "mojang" : "microsoft",
+		(config as any).username,
+		(config as any).password,
+		(config as any).auth === "mojang" ? "mojang" : "microsoft",
 		25565,
 		user
 	)
@@ -46,5 +72,3 @@ function init() {
 		console.log(chalk.greenBright` > ${client.username} ran ${command.name}`)
 	})
 }
-
-init();
