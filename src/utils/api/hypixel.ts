@@ -3,7 +3,7 @@ import { request } from "undici";
 import { getUUID, getUsername } from "./mojang"
 
 const BASE_URL = "https://api.hypixel.net";
-let API_KEY = "a84f8ac9-eaf4-40fa-bcb1-28f407b2ba98" // process.env.HYPIXEL_API_KEY
+let API_KEY: string;
 
 let flCache = new Cache(0);
 let playerGuildCache = new Cache(0);
