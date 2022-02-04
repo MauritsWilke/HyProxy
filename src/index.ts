@@ -11,7 +11,10 @@ const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
 import config from "./HyProxyConfig.json"
 
-if (!('username' in config) || !('password' in config) || !('auth' in config)) login();
+if (!('username' in config) || !('password' in config) || !('auth' in config)) {
+	console.log(chalk.redBright`! No login found`)
+	login();
+}
 else init();
 
 function login(): void {
@@ -20,7 +23,7 @@ function login(): void {
 		output: process.stdout
 	});
 
-	readline.question(chalk.redBright` ! No login found` + chalk.greenBright`\nEmail: `, (email: string) => {
+	readline.question(chalk.greenBright`Email: `, (email: string) => {
 		readline.question(chalk.greenBright`Password: `, (password: string) => {
 			readline.question(chalk.greenBright`Migrated (yes/no): `, (answer: string) => {
 				const yes: string[] = ["yes", "y", "eys", "yse", "yea"] // Honestly they should just follow orders instructions
@@ -44,6 +47,7 @@ function init(): void {
 		e = JSON.parse(e)[0]
 		if (['username', 'password', 'auth'].includes(e.path[0])) {
 			console.log(chalk.redBright` ! Your ${e.path[0]} is invalid!`)
+			return login()
 		}
 		console.log(chalk.redBright` ! ${e.message}`)
 		return
