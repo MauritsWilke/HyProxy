@@ -5,7 +5,7 @@ export default class Card {
 	statStyle: Styles;
 	card: Message;
 	fields: string[]
-	constructor(title: string, titleStyle: Styles, nameStyle: Styles, statStyle: Styles) {
+	constructor(title: string, titleStyle?: Styles, nameStyle?: Styles, statStyle?: Styles) {
 		titleStyle = {
 			color: "yellow",
 			bold: true,
@@ -32,7 +32,7 @@ export default class Card {
 		return cardJson
 	}
 
-	addField(name: string, value: string, nameStyle: Styles, statStyle: Styles): this {
+	addField(name: string, value: string, nameStyle?: Styles, statStyle?: Styles): this {
 		const field = new Message("")
 			.addText(name, { ...this.nameStyle, ...nameStyle })
 			.addText(value, { ...this.statStyle, ...statStyle }).toClassic();
@@ -40,7 +40,7 @@ export default class Card {
 		return this;
 	}
 
-	addLine(text: string, style: Styles): this {
+	addLine(text: string, style?: Styles): this {
 		this.fields.push(new Message(text, style).toClassic());
 		return this;
 	}

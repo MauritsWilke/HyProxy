@@ -2,13 +2,16 @@ import { createServer, createClient, states, ping, ServerClient, createDeseriali
 import chalk from "chalk";
 import EventEmitter from "events";
 import Command from "./command";
+import { z } from "zod";
+import configSchema from "../../config";
 
+export type settings = z.infer<typeof configSchema>
 export interface User {
 	commands: Map<string, Command>,
 	overwrites: Map<string, Command>
 	lastGame: string | null,
 	mode: string | null,
-	prefix: string
+	config: settings
 }
 
 export class HyProxy extends EventEmitter {
@@ -100,8 +103,8 @@ export class HyProxy extends EventEmitter {
 
 				if (serialized?.data?.name === "chat") {
 					const message = serialized.data.params.message;
-					if (message.startsWith(this.user.prefix)) {
-						const commandName = message.split(/ +/)[0].slice(this.user.prefix.length).toLowerCase();
+					if (message.startsWith(this.user.config.prefix)) {
+						const commandName = message.split(/ +/)[0].slice(this.user.config.prefix.length).toLowerCase();
 						const command = this.user.commands.get(commandName) || [...this.user.commands].find(command => command[1]?.aliases?.includes(commandName))
 						if (command) {
 							this.emit("outgoing", message, client, hypixel)

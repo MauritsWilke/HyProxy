@@ -1,4 +1,4 @@
-import { User, HyProxy } from "./utils/classes/HyProxy";
+import { User, HyProxy, settings } from "./utils/classes/HyProxy";
 import { appendFileSync, existsSync, readdirSync, writeFileSync } from "fs";
 import Command from "./utils/classes/command";
 import chalk from "chalk";
@@ -42,7 +42,7 @@ function login(): void {
 
 function init(): void {
 	try {
-		const Config = configSchema.parse(config);
+		var Config: settings = configSchema.parse(config);
 	} catch (e: any) {
 		e = JSON.parse(e)[0]
 		if (['username', 'password', 'auth'].includes(e.path[0])) {
@@ -58,7 +58,7 @@ function init(): void {
 		overwrites: new Map(),
 		lastGame: null,
 		mode: null,
-		prefix: config.prefix ?? "/"
+		config: Config
 	};
 
 	(['commands', 'overwrites'] as const).forEach(folder => {
@@ -81,7 +81,7 @@ function init(): void {
 	proxy.start();
 
 	proxy.on("outgoing", (message: string, client: ServerClient, server: Client) => {
-		const args: string[] = message.slice(user.prefix.length).split(/ +/);
+		const args: string[] = message.slice(user.config.prefix.length).split(/ +/);
 		const commandName: string = args?.shift()?.toLowerCase()!;
 		const command = user.commands.get(commandName) ||
 			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))?.[0]!)
