@@ -142,4 +142,9 @@ class Message {
 	}
 }
 
-export default Message
+export {
+	Message as default,
+	Message,
+	Styles,
+	Colours
+}
