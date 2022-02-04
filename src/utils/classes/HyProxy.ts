@@ -4,6 +4,9 @@ import EventEmitter from "events";
 import Command from "./command";
 import { z } from "zod";
 import configSchema from "../../config";
+import settingsTemplate from "../settings.json"
+import Message from "./message";
+import { deepParse } from "../util";
 
 export type settings = z.infer<typeof configSchema>
 export interface User {
@@ -57,6 +60,8 @@ export class HyProxy extends EventEmitter {
 		}
 
 		localhost.on("login", (client: ServerClient) => {
+			console.log(chalk.greenBright` > Logging in to Hypixel as ${client.username}`)
+
 			let endedClient: boolean = false;
 			let endedHypixel: boolean = false;
 
@@ -98,6 +103,19 @@ export class HyProxy extends EventEmitter {
 				customPackets: client.customPackets
 			})
 
+			setTimeout(() => {
+				[
+					`-`.repeat(53),
+					`  Welcome, ${client.username}`,
+					`  Connected to Hypixel through ${settingsTemplate.name}`,
+					`  Run ${this.user.config.prefix}help to see the commands`,
+					`-`.repeat(53),
+				].forEach(msg => {
+					const message = new Message(msg, { color: this.user.config.config.colours.default }).toString()
+					client.write("chat", { message: message })
+				})
+			}, 2000)
+
 			client.on("packet", (data: any, meta, buffer) => {
 				const serialized = clientDeserializer.parsePacketBuffer(buffer)
 
@@ -118,6 +136,16 @@ export class HyProxy extends EventEmitter {
 
 			hypixel.on("packet", (data: any, meta: PacketMeta, buffer: Buffer) => {
 				const serialized = serverDeserializer.parsePacketBuffer(buffer)
+				if (serialized.data.name === "login") hypixel.write("chat", { message: `/locraw` })
+
+				if (serialized?.data?.name === "chat") {
+					this.emit("incoming", serialized.data.params.message, client, hypixel)
+
+					const parsed = deepParse(serialized.data.params.message);
+					if (parsed?.text?.mode) this.user.mode = parsed.text.mode.toLowerCase();
+					if (parsed?.text?.gametype) this.user.lastGame = parsed.text.gametype.toLowerCase();
+					if (parsed?.text?.server || parsed?.text?.gametype || parsed?.text?.mode) return;
+				}
 
 				if (meta.state === states.PLAY && client.state === states.PLAY && !endedClient) {
 					client.write(meta.name, data);

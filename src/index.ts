@@ -41,8 +41,9 @@ function login(): void {
 }
 
 function init(): void {
+	let Config: settings;
 	try {
-		var Config: settings = configSchema.parse(config);
+		Config = configSchema.parse(config);
 	} catch (e: any) {
 		e = JSON.parse(e)[0]
 		if (['username', 'password', 'auth'].includes(e.path[0])) {
@@ -63,7 +64,7 @@ function init(): void {
 
 	(['commands', 'overwrites'] as const).forEach(folder => {
 		const files: string[] = readdirSync(join(__dirname, `./${folder}`)).filter(file => file.endsWith(".js"))
-		files.forEach(async (file: string) => {
+		files.forEach(async (file: string): Promise<void> => {
 			const path: string = `./${folder}/${file}`;
 			const { default: command } = await import(path)
 			const created: Command = new command
@@ -85,7 +86,6 @@ function init(): void {
 		const commandName: string = args?.shift()?.toLowerCase()!;
 		const command = user.commands.get(commandName) ||
 			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))?.[0]!)
-
 
 		if (!command) return
 		command.run(message, args, client, server, user)
