@@ -10,6 +10,7 @@ import configSchema from "./config";
 const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
 import config from "./HyProxyConfig.json"
+console.log(config)
 
 if (!('username' in config) || !('password' in config) || !('auth' in config)) {
 	console.log(chalk.redBright`! No login found`)
@@ -31,7 +32,7 @@ function login(): void {
 				copy.username = email;
 				copy.password = password;
 				copy.auth = yes.includes(answer.toString().toLowerCase()) ? "microsoft" : "mojang";
-				writeFileSync(join(__dirname, `HyProxyConfig.json`), JSON.stringify(copy, null, 4))
+				writeFileSync(`HyProxyConfig.json`, JSON.stringify(copy, null, 4))
 				console.clear();
 				readline.close();
 			})

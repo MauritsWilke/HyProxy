@@ -14,4 +14,7 @@
 	"include": [
 		"src/**/*"
 	],
+	"exclude": [
+		"src/commands/reload.ts"
+	]
 }

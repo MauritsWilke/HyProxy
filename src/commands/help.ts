@@ -4,7 +4,7 @@ import Command from "../utils/classes/command";
 import { User } from "../utils/classes/HyProxy";
 import Message from "../utils/classes/message";
 
-export default class Test extends Command {
+export default class extends Command {
 	constructor() {
 		super({
 			name: "help",

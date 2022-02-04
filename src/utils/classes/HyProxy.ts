@@ -53,12 +53,6 @@ export class HyProxy extends EventEmitter {
 
 		console.log(chalk.greenBright` > Proxy has been started`)
 
-		const data = {
-			username: this.username,
-			password: this.password,
-			auth: this.auth
-		}
-
 		localhost.on("login", (client: ServerClient) => {
 			console.log(chalk.greenBright` > Logging in to Hypixel as ${client.username}`)
 
@@ -89,20 +83,6 @@ export class HyProxy extends EventEmitter {
 				})
 			})
 
-			const serverDeserializer = createDeserializer({
-				state: hypixel.state,
-				isServer: hypixel.isServer,
-				version: hypixel.version,
-				customPackets: hypixel.customPackets
-			})
-
-			const clientDeserializer = createDeserializer({
-				state: client.state,
-				isServer: client.isServer,
-				version: client.version,
-				customPackets: client.customPackets
-			})
-
 			setTimeout(() => {
 				[
 					`-`.repeat(53),
@@ -117,6 +97,12 @@ export class HyProxy extends EventEmitter {
 			}, 2000)
 
 			client.on("packet", (data: any, meta, buffer) => {
+				const clientDeserializer = createDeserializer({
+					state: client.state,
+					isServer: client.isServer,
+					version: client.version,
+					customPackets: client.customPackets
+				})
 				const serialized = clientDeserializer.parsePacketBuffer(buffer)
 
 				if (serialized?.data?.name === "chat") {
@@ -135,15 +121,22 @@ export class HyProxy extends EventEmitter {
 			})
 
 			hypixel.on("packet", (data: any, meta: PacketMeta, buffer: Buffer) => {
+				const serverDeserializer = createDeserializer({
+					state: hypixel.state,
+					isServer: hypixel.isServer,
+					version: hypixel.version,
+					customPackets: hypixel.customPackets
+				})
 				const serialized = serverDeserializer.parsePacketBuffer(buffer)
+
 				if (serialized.data.name === "login") hypixel.write("chat", { message: `/locraw` })
 
 				if (serialized?.data?.name === "chat") {
 					this.emit("incoming", serialized.data.params.message, client, hypixel)
 
 					const parsed = deepParse(serialized.data.params.message);
-					if (parsed?.text?.mode) this.user.mode = parsed.text.mode.toLowerCase();
-					if (parsed?.text?.gametype) this.user.lastGame = parsed.text.gametype.toLowerCase();
+					if (parsed?.text?.gametype) this.user.mode = parsed.text.gametype.toLowerCase();
+					if (parsed?.text?.mode) this.user.lastGame = parsed.text.mode.toLowerCase();
 					if (parsed?.text?.server || parsed?.text?.gametype || parsed?.text?.mode) return;
 				}
 
