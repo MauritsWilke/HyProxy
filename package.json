@@ -2,7 +2,8 @@
 	"dependencies": {
 		"chalk": "^4.1.2",
 		"minecraft-protocol": "^1.30.0",
-		"undici": "^4.13.0"
+		"undici": "^4.13.0",
+		"zod": "^3.11.6"
 	},
 	"devDependencies": {
 		"@types/node": "^17.0.14"

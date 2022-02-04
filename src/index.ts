@@ -4,7 +4,8 @@ import Command from "./utils/classes/command";
 import chalk from "chalk";
 import { Client, ServerClient } from "minecraft-protocol";
 import { join } from "path";
-import { configTemplate } from "./utils/settings.json"
+import { configTemplate } from "./utils/settings.json";
+import configSchema from "./config";
 
 const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
@@ -37,6 +38,17 @@ function login(): void {
 }
 
 function init(): void {
+	try {
+		const Config = configSchema.parse(config);
+	} catch (e: any) {
+		e = JSON.parse(e)[0]
+		if (['username', 'password', 'auth'].includes(e.path[0])) {
+			console.log(chalk.redBright` ! Your ${e.path[0]} is invalid!`)
+		}
+		console.log(chalk.redBright` ! ${e.message}`)
+		return
+	}
+
 	const user: User = {
 		commands: new Map<string, Command>(),
 		overwrites: new Map(),
