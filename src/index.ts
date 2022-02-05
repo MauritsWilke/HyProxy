@@ -11,13 +11,13 @@ const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
 import config from "./HyProxyConfig.json"
 
-if (!('username' in config) || !('password' in config) || !('auth' in config)) {
+if (!("username" in config) || !("password" in config) || !("auth" in config)) {
 	console.log(chalk.redBright`! No login found`)
 	login();
 } else init();
 
 async function login() {
-	const rl = await import('readline');
+	const rl = await import("readline");
 	const readline = rl.createInterface({
 		input: process.stdin,
 		output: process.stdout
@@ -31,7 +31,7 @@ async function login() {
 				copy.username = email;
 				copy.password = password;
 				copy.auth = yes.includes(answer.toString().toLowerCase()) ? "microsoft" : "mojang";
-				writeFileSync(`HyProxyConfig.json`, JSON.stringify(copy, null, 4))
+				writeFileSync("HyProxyConfig.json", JSON.stringify(copy, null, 4))
 				console.clear();
 				readline.close();
 			})
@@ -47,7 +47,7 @@ function init() {
 		Config = configSchema.parse(config);
 	} catch (e: any) {
 		const configError = JSON.parse(e)[0]
-		if (['username', 'password', 'auth'].includes(configError.path[0])) {
+		if (["username", "password", "auth"].includes(configError.path[0])) {
 			console.log(chalk.redBright` ! Your ${configError.path[0]} is invalid!`)
 			return login()
 		}
@@ -63,7 +63,7 @@ function init() {
 		config: Config
 	};
 
-	(['commands', 'overwrites'] as const).forEach(folder => {
+	(["commands", "overwrites"] as const).forEach(folder => {
 		const files: string[] = readdirSync(join(__dirname, `./${folder}`)).filter(file => file.endsWith(".js"))
 		files.forEach(async (file: string): Promise<void> => {
 			const { default: command } = await import(`./${folder}/${file}`)

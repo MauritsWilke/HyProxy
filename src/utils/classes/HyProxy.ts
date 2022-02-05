@@ -34,10 +34,10 @@ export class HyProxy extends EventEmitter {
 		})
 
 		const realHypixel = {
-			motd: 'description' in hyPing ? typeof hyPing.description === "string" ? hyPing.description : hyPing.description.text : hyPing.motd,
-			favicon: 'favicon' in hyPing ? hyPing.favicon : "",
-			maxPlayers: 'maxPlayers' in hyPing ? hyPing.maxPlayers : hyPing.players.max,
-			playerCount: 'playerCount' in hyPing ? hyPing.playerCount : hyPing.players.online
+			motd: "description" in hyPing ? typeof hyPing.description === "string" ? hyPing.description : hyPing.description.text : hyPing.motd,
+			favicon: "favicon" in hyPing ? hyPing.favicon : "",
+			maxPlayers: "maxPlayers" in hyPing ? hyPing.maxPlayers : hyPing.players.max,
+			playerCount: "playerCount" in hyPing ? hyPing.playerCount : hyPing.players.online
 		}
 
 		const localhost = createServer({
@@ -69,7 +69,7 @@ export class HyProxy extends EventEmitter {
 				version: "1.8.9",
 			});
 
-			['end', 'error'].forEach(event => {
+			["end", "error"].forEach(event => {
 				client.on(event, () => {
 					endedClient = true;
 					if (!endedHypixel) hypixel.end("The proxy seems to have failed")
@@ -85,11 +85,11 @@ export class HyProxy extends EventEmitter {
 
 			setTimeout(() => {
 				[
-					`-`.repeat(53),
+					"-".repeat(53),
 					`  Welcome, ${client.username}`,
 					`  Connected to Hypixel through ${settingsTemplate.name}`,
 					`  Run ${this.user.config.prefix}help to see the commands`,
-					`-`.repeat(53),
+					"-".repeat(53),
 				].forEach(msg => {
 					const message = new Message(msg, { color: this.user.config.config.colours.default }).toString()
 					client.write("chat", { message: message })
@@ -129,7 +129,7 @@ export class HyProxy extends EventEmitter {
 				})
 				const serialized = serverDeserializer.parsePacketBuffer(buffer)
 
-				if (serialized.data.name === "login") hypixel.write("chat", { message: `/locraw` })
+				if (serialized.data.name === "login") hypixel.write("chat", { message: "/locraw" })
 
 				if (serialized?.data?.name === "chat") {
 					this.emit("incoming", serialized.data.params.message, client, hypixel)

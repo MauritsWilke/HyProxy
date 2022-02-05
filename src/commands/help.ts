@@ -17,13 +17,13 @@ export default class extends Command {
 		const design = user.config.config
 
 		if (args.length === 0) {
-			const msg = new Message(`-------------------- Help --------------------`, { color: design.colours.default, bold: true })
+			const msg = new Message("-------------------- Help --------------------", { color: design.colours.default, bold: true })
 			for (const command of user.commands.values()) {
 				const capitalName = command.name.charAt(0).toUpperCase() + command.name.slice(1);
 				const helpCard = new Card(capitalName)
-					.addField(`Description: `, command.description)
-					.addField(`Example: `, command.example)
-					.addField(`Aliases: `, command.aliases?.join() || "None")
+					.addField("Description: ", command.description)
+					.addField("Example: ", command.example)
+					.addField("Aliases: ", command.aliases?.join() || "None")
 					.toClassic();
 
 				msg.newLine();
@@ -46,12 +46,12 @@ export default class extends Command {
 				return;
 			}
 
-			const helpMsg = new Message(`-`.repeat(53), { color: design.colours.default })
-				.addText(`Name: `, { bold: true }).addText(command.name).newLine()
-				.addText(`Description: `, { bold: true }).addText(command?.description ?? "none?").newLine()
-				.addText(`Example: `, { bold: true }).addText(command?.example ?? "none?").newLine()
-				.addText(`Aliases: `, { bold: true }).addText(command?.aliases?.join() || "none").newLine()
-				.addText(`-`.repeat(53), { color: design.colours.default })
+			const helpMsg = new Message("-".repeat(53), { color: design.colours.default })
+				.addText("Name: ", { bold: true }).addText(command.name).newLine()
+				.addText("Description: ", { bold: true }).addText(command?.description ?? "none?").newLine()
+				.addText("Example: ", { bold: true }).addText(command?.example ?? "none?").newLine()
+				.addText("Aliases: ", { bold: true }).addText(command?.aliases?.join() || "none").newLine()
+				.addText("-".repeat(53), { color: design.colours.default })
 				.onClick("suggest_command", `${user.config.prefix}${command.name}`, "all")
 				.toString();
 			client.write("chat", { message: helpMsg })

@@ -50,7 +50,7 @@ async function friendList(player: string) {
 		if (response.statusCode !== 200) return Promise.reject(`${response.statusCode} ${response.body}`);
 		const { records } = await response.body.json();
 		for (const friend of records) {
-			friendList.set(friend.uuidReceiver === UUID ? await getUsername(friend.uuidSender) : await getUsername(friend.uuidReceiver), Intl.DateTimeFormat('en-GB').format(new Date(friend.started)))
+			friendList.set(friend.uuidReceiver === UUID ? await getUsername(friend.uuidSender) : await getUsername(friend.uuidReceiver), Intl.DateTimeFormat("en-GB").format(new Date(friend.started)))
 		}
 		flCache.set(player, friendList)
 		return friendList;

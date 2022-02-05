@@ -18,10 +18,10 @@ export default class extends Command {
 	run(message: string, args: string[], client: ServerClient, server: Client, user: User) {
 		const design = user.config.config;
 		if (!user.lastGame) {
-			const msg = new Message(`You haven't played any games yet!`, { color: design.colours.failed })
+			const msg = new Message("You haven't played any games yet!", { color: design.colours.failed })
 			return client.write("chat", { message: msg.toString() })
 		} else {
-			server.write('chat', { message: `/play ${user.lastGame}` })
+			server.write("chat", { message: `/play ${user.lastGame}` })
 		}
 	}
 }

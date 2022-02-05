@@ -27,7 +27,7 @@ const configSchema = z.object({
 		message: "Username must be an email!"
 	}),
 	password: z.string(),
-	auth: z.enum(['mojang', 'microsoft']),
+	auth: z.enum(["mojang", "microsoft"]),
 
 	config: z.object({
 		colours: z.object({

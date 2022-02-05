@@ -19,7 +19,7 @@ export default class extends Command {
 		user.commands = new Map<string, Command>();
 		user.overwrites = new Map();
 
-		(['commands', 'overwrites'] as const).forEach(folder => {
+		(["commands", "overwrites"] as const).forEach(folder => {
 			const files: string[] = readdirSync(`./${folder}`).filter(file => file.endsWith(".js"))
 			files.forEach(async (file: string): Promise<void> => {
 				const { default: command } = await import(`../${folder}/${file}`)
@@ -29,7 +29,7 @@ export default class extends Command {
 		})
 
 		const msg = new Message("Successfully reloaded all commands!", { color: design.colours.success }).toString()
-		client.write('chat', { message: msg })
+		client.write("chat", { message: msg })
 
 	}
 }

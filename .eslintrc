@@ -17,7 +17,10 @@
 		"@typescript-eslint/no-non-null-asserted-optional-chain": "off",
 		"indent": [
 			"error",
-			"tab"
+			"tab",
+			{
+				"SwitchCase": 1
+			}
 		],
 		"handle-callback-err": [
 			"error"
@@ -52,6 +55,10 @@
 			}
 		],
 		"no-trailing-spaces": "error",
-		"spaced-comment": "error"
+		"spaced-comment": "error",
+		"quotes": [
+			"error",
+			"double"
+		]
 	}
 }

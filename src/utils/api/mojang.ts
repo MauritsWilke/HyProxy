@@ -31,13 +31,13 @@ async function getSkin(username: string) {
 	const response = await request(`https://sessionserver.mojang.com/session/minecraft/profile/${UUID}`);
 	if (response.statusCode !== 200) return Promise.reject(`Response returned statuscode ${response.statusCode}`);
 	const json = await response.body.json();
-	const r = JSON.parse(Buffer.from(json.properties[0].value, 'base64').toString('ascii'));
+	const r = JSON.parse(Buffer.from(json.properties[0].value, "base64").toString("ascii"));
 	skinCache.set(username, r.textures.SKIN.url);
 	return r.textures.SKIN.url;
 }
 
 async function getUsername(playerUUID: string) {
-	if (!playerUUID.match(/[\d-]/i)) return Promise.reject(`Please submit a valid UUID`);
+	if (!playerUUID.match(/[\d-]/i)) return Promise.reject("Please submit a valid UUID");
 	const cached = usernameCache.get(playerUUID);
 	if (cached) return cached
 	const response = await request(`https://api.mojang.com/user/profiles/${playerUUID}/names`);
@@ -59,15 +59,15 @@ async function getNameHistory(username: string) {
 		const response = await request(`https://api.mojang.com/user/profiles/${UUID}/names`);
 		if (response.statusCode !== 200) return Promise.reject(`Response returned statuscode ${response.statusCode}`);
 		const r: NameHistory[] = await response.body.json();
-		r.forEach(element => nameHistory.set(element.name, element.changedToAt ? Intl.DateTimeFormat('en-GB').format(new Date(element.changedToAt)) : "Original name"));
+		r.forEach(element => nameHistory.set(element.name, element.changedToAt ? Intl.DateTimeFormat("en-GB").format(new Date(element.changedToAt)) : "Original name"));
 		return nameHistory;
 
 	} else {
-		if (!username.match(/[\d-]/i)) return Promise.reject(`Please submit a valid UUID`);
+		if (!username.match(/[\d-]/i)) return Promise.reject("Please submit a valid UUID");
 		const response = await request(`https://api.mojang.com/user/profiles/${username}/names`);
 		if (response.statusCode !== 200) return Promise.reject(`Response returned statuscode ${response.statusCode}`);
 		const r: NameHistory[] = await response.body.json();
-		r.forEach(element => nameHistory.set(element.name, element.changedToAt ? Intl.DateTimeFormat('en-GB').format(new Date(element.changedToAt)) : "Original name"));
+		r.forEach(element => nameHistory.set(element.name, element.changedToAt ? Intl.DateTimeFormat("en-GB").format(new Date(element.changedToAt)) : "Original name"));
 		return nameHistory;
 	}
 }

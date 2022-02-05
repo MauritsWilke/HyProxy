@@ -4,7 +4,7 @@ function deepParse(objectlike: any): any {
 	} catch (e) {
 		throw new Error("Argument must be of type 'object' or of type 'string' with object structure")
 	}
-	if (typeof objectlike !== 'object') return null;
+	if (typeof objectlike !== "object") return null;
 
 	Object.entries(objectlike).forEach(
 		([key, value]: [any, any]) => {
