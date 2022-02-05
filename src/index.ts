@@ -10,7 +10,6 @@ import configSchema from "./config";
 const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
 import config from "./HyProxyConfig.json"
-console.log(config)
 
 if (!('username' in config) || !('password' in config) || !('auth' in config)) {
 	console.log(chalk.redBright`! No login found`)
@@ -38,6 +37,7 @@ function login(): void {
 			})
 		})
 	})
+	readline.on("SIGINT", () => process.exit())
 	readline.on("close", () => init())
 }
 
@@ -93,3 +93,11 @@ function init(): void {
 		console.log(chalk.greenBright` > ${client.username} ran ${command.name}`)
 	})
 }
+
+process.on("uncaughtException", (err) => {
+	if (err.message.match("Invalid credentials.")) {
+		console.clear();
+		console.log(chalk.redBright` ! Your login is invalid!`);
+		login();
+	}
+})	
