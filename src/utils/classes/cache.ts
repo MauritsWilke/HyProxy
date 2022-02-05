@@ -14,7 +14,7 @@ export class Cache extends Map {
 		return super.get(key)
 	}
 
-	get(key: any, unreduced: boolean = false): Cached | null | any {
+	get(key: any, unreduced = false): Cached | null | any {
 		const cache = super.get(key);
 		if (!cache) return null
 		if (Date.now() > cache.expiration) {

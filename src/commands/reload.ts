@@ -22,8 +22,7 @@ export default class extends Command {
 		(['commands', 'overwrites'] as const).forEach(folder => {
 			const files: string[] = readdirSync(`./${folder}`).filter(file => file.endsWith(".js"))
 			files.forEach(async (file: string): Promise<void> => {
-				const path: string = `../${folder}/${file}`;
-				const { default: command } = await import(path)
+				const { default: command } = await import(`../${folder}/${file}`)
 				const created: Command = new command
 				user[folder].set(created.name, created)
 			})

@@ -5,8 +5,8 @@ import { getUUID, getUsername } from "./mojang"
 const BASE_URL = "https://api.hypixel.net";
 let API_KEY: string;
 
-let flCache = new Cache(0);
-let playerGuildCache = new Cache(0);
+const flCache = new Cache(0);
+const playerGuildCache = new Cache(0);
 
 export {
 	setKey,
@@ -44,7 +44,7 @@ async function playerStats(player: string, gamemode?: string) {
 async function friendList(player: string) {
 	const friends = flCache.get(player);
 	if (!friends) {
-		let friendList = new Map()
+		const friendList = new Map()
 		const UUID = await getUUID(player);
 		const response = await request(`${BASE_URL}/friends?uuid=${UUID}&key=${API_KEY}`);
 		if (response.statusCode !== 200) return Promise.reject(`${response.statusCode} ${response.body}`);
@@ -95,7 +95,7 @@ async function guildData(guildName: string) {
 }
 
 async function getActiveBoosters() {
-	let activeBoosters = new Map();
+	const activeBoosters = new Map();
 	const response = await request(`${BASE_URL}/boosters?&key=${API_KEY}`);
 	if (response.statusCode !== 200) return Promise.reject(`${response.statusCode} ${response.body}`);
 	const json = await response.body.json();
@@ -105,7 +105,7 @@ async function getActiveBoosters() {
 }
 
 async function playerCounts() {
-	let playerCount = new Map();
+	const playerCount = new Map();
 	const response = await request(`${BASE_URL}/counts?&key=${API_KEY}`);
 	if (response.statusCode !== 200) return Promise.reject(`${response.statusCode} ${response.body}`);
 	const json = await response.body.json();

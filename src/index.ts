@@ -14,8 +14,7 @@ import config from "./HyProxyConfig.json"
 if (!('username' in config) || !('password' in config) || !('auth' in config)) {
 	console.log(chalk.redBright`! No login found`)
 	login();
-}
-else init();
+} else init();
 
 async function login() {
 	const rl = await import('readline');
@@ -84,7 +83,7 @@ function init() {
 
 	proxy.on("outgoing", (message: string, client: ServerClient, server: Client) => {
 		const args: string[] = message.slice(user.config.prefix.length).split(/ +/);
-		const commandName = args?.shift()?.toLowerCase()!;
+		const commandName: string = args?.shift()?.toLowerCase()!;
 		const command = user.commands.get(commandName) ||
 			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))?.[0]!)
 
@@ -101,4 +100,4 @@ process.on("uncaughtException", (err) => {
 		login();
 	}
 	process.exit()
-})	
+})

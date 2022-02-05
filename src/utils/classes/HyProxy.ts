@@ -56,8 +56,8 @@ export class HyProxy extends EventEmitter {
 		localhost.on("login", (client: ServerClient) => {
 			console.log(chalk.greenBright` > Logging in to Hypixel as ${client.username}`)
 
-			let endedClient: boolean = false;
-			let endedHypixel: boolean = false;
+			let endedClient = false;
+			let endedHypixel = false;
 
 			const hypixel = createClient({
 				username: this.username,

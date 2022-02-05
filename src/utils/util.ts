@@ -11,6 +11,7 @@ function deepParse(objectlike: any): any {
 			try {
 				objectlike[key] = JSON.parse(value)
 				objectlike[key] = deepParse(objectlike[key])
+				// eslint-disable-next-line no-empty
 			} catch (e) { }
 		}
 	);

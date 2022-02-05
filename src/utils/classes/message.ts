@@ -91,9 +91,9 @@ class Message {
 	}
 
 	toClassic(): string {
-		let { extra: extra, ...rest } = this.message;
+		const { extra: extra, ...rest } = this.message;
 		let classic = toFormatting(rest);
-		for (let ex of extra) classic += toFormatting(ex)
+		for (const ex of extra) classic += toFormatting(ex)
 		return classic
 	}
 
@@ -106,7 +106,7 @@ class Message {
 		return this
 	}
 
-	newLine(amount: number = 1): this {
+	newLine(amount = 1): this {
 		while (amount--) this.message.extra.push({ text: "\n" })
 		return this
 	}

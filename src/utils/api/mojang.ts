@@ -52,7 +52,7 @@ type NameHistory = {
 	changedToAt: number
 }
 async function getNameHistory(username: string) {
-	let nameHistory = new Map();
+	const nameHistory = new Map();
 	if (username.length <= 16) {
 		if (!valid(username)) return Promise.reject(`${username} is an invalid username`);
 		const UUID = await getUUID(username)
