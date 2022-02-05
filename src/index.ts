@@ -17,8 +17,9 @@ if (!('username' in config) || !('password' in config) || !('auth' in config)) {
 }
 else init();
 
-function login(): void {
-	const readline = require('readline').createInterface({
+async function login() {
+	const rl = await import('readline');
+	const readline = rl.createInterface({
 		input: process.stdin,
 		output: process.stdout
 	});
@@ -27,7 +28,7 @@ function login(): void {
 		readline.question(chalk.greenBright`Password: `, (password: string) => {
 			readline.question(chalk.greenBright`Migrated (yes/no): `, (answer: string) => {
 				const yes: string[] = ["yes", "y", "eys", "yse", "yea"] // Honestly they should just follow orders instructions
-				let copy: any = config;
+				const copy: any = config;
 				copy.username = email;
 				copy.password = password;
 				copy.auth = yes.includes(answer.toString().toLowerCase()) ? "microsoft" : "mojang";
@@ -41,17 +42,17 @@ function login(): void {
 	readline.on("close", () => init())
 }
 
-function init(): void {
+function init() {
 	let Config: settings;
 	try {
 		Config = configSchema.parse(config);
 	} catch (e: any) {
-		e = JSON.parse(e)[0]
-		if (['username', 'password', 'auth'].includes(e.path[0])) {
-			console.log(chalk.redBright` ! Your ${e.path[0]} is invalid!`)
+		const configError = JSON.parse(e)[0]
+		if (['username', 'password', 'auth'].includes(configError.path[0])) {
+			console.log(chalk.redBright` ! Your ${configError.path[0]} is invalid!`)
 			return login()
 		}
-		console.log(chalk.redBright` ! ${e.message}`)
+		console.log(chalk.redBright` ! ${configError.message}`)
 		return
 	}
 
@@ -66,8 +67,7 @@ function init(): void {
 	(['commands', 'overwrites'] as const).forEach(folder => {
 		const files: string[] = readdirSync(join(__dirname, `./${folder}`)).filter(file => file.endsWith(".js"))
 		files.forEach(async (file: string): Promise<void> => {
-			const path: string = `./${folder}/${file}`;
-			const { default: command } = await import(path)
+			const { default: command } = await import(`./${folder}/${file}`)
 			const created: Command = new command
 			user[folder].set(created.name, created)
 		})
@@ -84,7 +84,7 @@ function init(): void {
 
 	proxy.on("outgoing", (message: string, client: ServerClient, server: Client) => {
 		const args: string[] = message.slice(user.config.prefix.length).split(/ +/);
-		const commandName: string = args?.shift()?.toLowerCase()!;
+		const commandName = args?.shift()?.toLowerCase()!;
 		const command = user.commands.get(commandName) ||
 			user.commands.get([...user.commands].find(command => command[1]?.aliases?.includes(commandName))?.[0]!)
 
