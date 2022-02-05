@@ -100,4 +100,5 @@ process.on("uncaughtException", (err) => {
 		console.log(chalk.redBright` ! Your login is invalid!`);
 		login();
 	}
+	process.exit()
 })	
