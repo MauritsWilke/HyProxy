@@ -28,12 +28,22 @@ const configSchema = z.object({
 	}),
 	password: z.string(),
 	auth: z.enum(["mojang", "microsoft"]),
+	apiKey: z.string().optional(),
 
 	config: z.object({
 		colours: z.object({
 			default: colourEnum,
 			success: colourEnum,
 			failed: colourEnum
+		}),
+		overwrites: z.object({
+			bedwars: z.string().or(z.object({
+				overall: z.string(),
+				solos: z.string().optional(),
+				doubles: z.string().optional(),
+				threes: z.string().optional(),
+				fours: z.string().optional(),
+			}))
 		}),
 		joinIcon: z.string()
 	})

@@ -17,9 +17,8 @@ export default class extends Command {
 		const design = user.config.config;
 
 		user.commands = new Map<string, Command>();
-		user.overwrites = new Map();
 
-		(["commands", "overwrites"] as const).forEach(folder => {
+		(["commands"] as const).forEach(folder => {
 			const files: string[] = readdirSync(`./${folder}`).filter(file => file.endsWith(".js"))
 			files.forEach(async (file: string): Promise<void> => {
 				const { default: command } = await import(`../${folder}/${file}`)

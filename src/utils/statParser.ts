@@ -68,6 +68,7 @@ function getPlayerBedwars(path: string[], player: any) {
 	switch (path[path.length - 1]) {
 		case "star": return [`[${player?.achievements?.bedwars_level || 0}${returnSuffix(player?.achievements?.bedwars_level || 0)}]`]
 
+		case "fdkr":
 		case "fkdr": {
 			const card = new Card(`${player.displayname} - FKDR`)
 			const modeStat = Math.round((bw?.[mode + "final_kills_bedwars"] / bw?.[mode + "final_deaths_bedwars"]) * 100) / 100 || 0
@@ -115,10 +116,10 @@ function getPlayerBedwars(path: string[], player: any) {
 		case "ws":
 		case "winstreak": {
 			const card = new Card(`${player.displayname} - WS`)
-			const modeStat = bw?.[mode + "winstreak"] || "disabled"
+			const modeStat = bw?.[mode + "winstreak"] ?? "disabled"
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
-				const modeStat = `${bw?.[apiMode + "winstreak"] || "disabled"}`
+				const modeStat = `${bw?.[apiMode + "winstreak"] ?? "disabled"}`
 				card.addField(`${mode}: `, modeStat)
 			})
 			return [`${modeStat}WS`, card.toClassic()]

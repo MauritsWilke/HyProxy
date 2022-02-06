@@ -7,11 +7,13 @@ import configSchema from "../../config";
 import settingsTemplate from "../settings.json"
 import Message from "./message";
 import { deepParse } from "../util";
+import { messageToFormatting } from "./message"
+import parseStats from "../statParser";
+// import { updateActivity } from "../discordPresence"
 
 export type settings = z.infer<typeof configSchema>
 export interface User {
 	commands: Map<string, Command>,
-	overwrites: Map<string, Command>
 	lastGame: string | null,
 	mode: string | null,
 	config: settings
@@ -120,7 +122,7 @@ export class HyProxy extends EventEmitter {
 				if (hypixel.state === states.PLAY && meta.state === states.PLAY && !endedHypixel) hypixel.write(meta.name, data);
 			})
 
-			hypixel.on("packet", (data: any, meta: PacketMeta, buffer: Buffer) => {
+			hypixel.on("packet", async (data: any, meta: PacketMeta, buffer: Buffer) => {
 				const serverDeserializer = createDeserializer({
 					state: hypixel.state,
 					isServer: hypixel.isServer,
@@ -138,7 +140,21 @@ export class HyProxy extends EventEmitter {
 					if (parsed?.text?.gametype) this.user.mode = parsed.text.gametype.toLowerCase();
 					if (parsed?.text?.mode) this.user.lastGame = parsed.text.mode.toLowerCase();
 					if (parsed?.text?.server || parsed?.text?.gametype || parsed?.text?.mode) {
+						// if (this.user.mode) updateActivity(this.user.mode, this?.user?.lastGame || "")
 						return
+					}
+
+					if (this.user.mode === null || !this.user.config.apiKey) return
+					const classicStyle = messageToFormatting(parsed);
+					const flatClean = classicStyle.replace(/§./g, "");
+					const overwrite = (this.user.config.config.overwrites as any)[this.user.mode]
+					if (overwrite && flatClean.match(/ has joined \(\d{1,2}\/\d{1,2}\)!/)) {
+						if (typeof overwrite === "string") {
+							const ign = flatClean.replace(/ has joined \(\d{1,2}\/\d{1,2}\)!/, "");
+							const msg = await parseStats(ign, overwrite)
+							client.write("chat", { message: msg.toString() })
+							return;
+						}
 					}
 				}
 

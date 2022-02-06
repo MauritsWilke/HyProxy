@@ -23,6 +23,19 @@ const classicFormatting = new Map<string, string>([
 	["reset", "§r"]
 ])
 
+function messageToFormatting(msg: any) {
+	let formatted = msg?.text || "";
+	const copy = Object.assign({}, msg);
+	delete copy?.extra;
+	formatted += toFormatting(copy)
+	if (msg?.extra) {
+		for (const ex of msg.extra) {
+			formatted += toFormatting(ex)
+		}
+	}
+	return formatted
+}
+
 function toFormatting(msg: MessageType): string {
 	const exclude = ["text", "clickEvent", "hoverEvent", "insertion"]
 	let formatted = ""
@@ -39,12 +52,12 @@ function toFormatting(msg: MessageType): string {
 type Colours = "black" | "dark_blue" | "dark_green" | "dark_aqua" | "dark_red" | "dark_purple" | "gold" | "gray" | "dark_gray" | "blue" | "green" | "aqua" | "red" | "light_purple" | "yellow" | "white"
 
 type Styles = {
-	bold?: boolean;
+	bold?: boolean | null;
 	color?: Colours;
-	italic?: boolean;
-	underlined?: boolean;
-	strikethrough?: boolean;
-	obfuscated?: boolean;
+	italic?: boolean | null;
+	underlined?: boolean | null;
+	strikethrough?: boolean | null;
+	obfuscated?: boolean | null;
 }
 
 type MessageType = Styles & {
@@ -146,5 +159,7 @@ export {
 	Message as default,
 	Message,
 	Styles,
-	Colours
+	Colours,
+	toFormatting,
+	messageToFormatting
 }
