@@ -137,7 +137,9 @@ export class HyProxy extends EventEmitter {
 					const parsed = deepParse(serialized.data.params.message);
 					if (parsed?.text?.gametype) this.user.mode = parsed.text.gametype.toLowerCase();
 					if (parsed?.text?.mode) this.user.lastGame = parsed.text.mode.toLowerCase();
-					if (parsed?.text?.server || parsed?.text?.gametype || parsed?.text?.mode) return;
+					if (parsed?.text?.server || parsed?.text?.gametype || parsed?.text?.mode) {
+						return
+					}
 				}
 
 				if (meta.state === states.PLAY && client.state === states.PLAY && !endedClient) {

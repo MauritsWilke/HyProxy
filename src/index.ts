@@ -6,6 +6,7 @@ import { Client, ServerClient } from "minecraft-protocol";
 import { join } from "path";
 import { configTemplate } from "./utils/settings.json";
 import configSchema from "./config";
+// import "./utils/discordPresence"
 
 const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
