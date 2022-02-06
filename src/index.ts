@@ -6,11 +6,12 @@ import { Client, ServerClient } from "minecraft-protocol";
 import { join } from "path";
 import { configTemplate } from "./utils/settings.json";
 import configSchema from "./config";
-// import "./utils/discordPresence"
+import "./utils/discordPresence"
 
 const configPath = "./HyProxyConfig.json"
 if (!existsSync(configPath)) appendFileSync(configPath, JSON.stringify(configTemplate, null, 4))
 import config from "./HyProxyConfig.json"
+import { setKey } from "./utils/api/hypixel";
 
 if (!("username" in config) || !("password" in config) || !("auth" in config)) {
 	console.log(chalk.redBright`! No login found`)
@@ -56,22 +57,26 @@ function init() {
 		return
 	}
 
+	if (Config.apiKey) {
+		// const validate = keyInfo(Config.apiKey);
+		setKey(config.apiKey)
+	}
+
 	const user: User = {
 		commands: new Map<string, Command>(),
-		overwrites: new Map(),
 		lastGame: null,
 		mode: null,
 		config: Config
 	};
 
-	(["commands", "overwrites"] as const).forEach(folder => {
-		const files: string[] = readdirSync(join(__dirname, `./${folder}`)).filter(file => file.endsWith(".js"))
-		files.forEach(async (file: string): Promise<void> => {
-			const { default: command } = await import(`./${folder}/${file}`)
-			const created: Command = new command
-			user[folder].set(created.name, created)
-		})
+
+	const files: string[] = readdirSync(join(__dirname, "./commands")).filter(file => file.endsWith(".js"))
+	files.forEach(async (file: string): Promise<void> => {
+		const { default: command } = await import(`./commands/${file}`)
+		const created: Command = new command
+		user.commands.set(created.name, created)
 	})
+
 
 	const proxy = new HyProxy(
 		(config as any).username,
@@ -100,5 +105,6 @@ process.on("uncaughtException", (err) => {
 		console.log(chalk.redBright` ! Your login is invalid!`);
 		login();
 	}
+	console.log(err)
 	process.exit()
 })
