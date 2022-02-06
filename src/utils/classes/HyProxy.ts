@@ -8,7 +8,7 @@ import settingsTemplate from "../settings.json"
 import Message from "./message";
 import { deepParse } from "../util";
 import { messageToFormatting } from "./message"
-import parseStats from "../statParser";
+import parseStats from "../statParser/statParser";
 // import { updateActivity } from "../discordPresence"
 
 export type settings = z.infer<typeof configSchema>
@@ -152,6 +152,7 @@ export class HyProxy extends EventEmitter {
 						if (typeof overwrite === "string") {
 							const ign = flatClean.replace(/ has joined \(\d{1,2}\/\d{1,2}\)!/, "");
 							const msg = await parseStats(ign, overwrite)
+							msg.appendText(` ${this.user.config.config.joinIcon} `, { color: "gold" })
 							client.write("chat", { message: msg.toString() })
 							return;
 						}

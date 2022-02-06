@@ -119,6 +119,15 @@ class Message {
 		return this
 	}
 
+	appendText(text: string, styling: Styles = {}): this {
+		this.message.extra.unshift({
+			text: text,
+			...this.styling,
+			...styling
+		})
+		return this
+	}
+
 	newLine(amount = 1): this {
 		while (amount--) this.message.extra.push({ text: "\n" })
 		return this

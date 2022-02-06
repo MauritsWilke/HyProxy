@@ -1,48 +1,8 @@
-import { playerStats } from "./api/hypixel"
-import Message from "./classes/message";
-import Card from "./classes/card";
+import Card from "../classes/card";
+import Message, { Colours } from "../classes/message";
+import sc from "./starColours.json"
+const starColours: any = sc
 
-export default async function parseStats(username: string, message: string) {
-	const splitMessage = message.split(/({[^]*?})/g).filter(v => v !== "");
-	const player = await playerStats(username);
-
-	const overwriteMessage = new Message("", { color: "yellow" })
-	for (const part of splitMessage) {
-		if (!part.match(/{[^]*?}/)) {
-			overwriteMessage.addText(part)
-			continue;
-		}
-		const replacer = getStats(part, player);
-		if (replacer === "invalid path") {
-			overwriteMessage.addText("invalid path", { color: "red" })
-			continue;
-		}
-		overwriteMessage.addText(replacer[0]);
-		if (replacer[1]) overwriteMessage.onHover(replacer[1])
-	}
-
-	return overwriteMessage
-}
-
-function getStats(part: string, player: any) {
-	const path = part.replace(/{|}/g, "").split(".");
-	if (path.length === 0) return "invalid path"
-	switch (path[0]) {
-		case "username": return getPlayerOverall(path.slice(1), player)
-		case "bw":
-		case "bedwars": return getPlayerBedwars(path.slice(1), player)
-
-		default: return "invalid path"
-	}
-}
-
-function getPlayerOverall(path: string[], player: any) {
-	switch (path[0]) {
-		default: return [player.displayname]
-	}
-}
-
-// #region Bedwars
 const bedwarsModesMap = new Map([
 	["overall", ""],
 	["solo", "eight_one_"],
@@ -56,17 +16,23 @@ const bedwarsModesMap = new Map([
 ])
 
 const bedwarsModes = [
+	"",
 	"Solo",
 	"Doubles",
 	"Threes",
 	"Fours"
 ]
 
-function getPlayerBedwars(path: string[], player: any) {
+export function getPlayerBedwars(path: string[], player: any) {
 	const bw = player.stats.Bedwars;
 	const mode = bedwarsModesMap.get(path[0]) ?? "";
+	let style = "upper"
+	if (["clean", "upper", "lower", "num"].includes(path[path.length - 1])) {
+		style = path.pop()!
+	}
+
 	switch (path[path.length - 1]) {
-		case "star": return [`[${player?.achievements?.bedwars_level || 0}${returnSuffix(player?.achievements?.bedwars_level || 0)}]`]
+		case "star": return starColour(player?.achievements?.bedwars_level || 0)
 
 		case "fdkr":
 		case "fkdr": {
@@ -75,9 +41,9 @@ function getPlayerBedwars(path: string[], player: any) {
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
 				const modeStat = `${Math.round((bw?.[apiMode + "final_kills_bedwars"] / bw?.[apiMode + "final_deaths_bedwars"]) * 100) / 100 || 0}`
-				card.addField(`${mode}: `, modeStat)
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat}FKDR`, card.toClassic()]
+			return [`${modeStat}${statSuffix("FKDR", style)}`, card.toClassic()]
 		}
 
 		case "kdr": {
@@ -86,9 +52,9 @@ function getPlayerBedwars(path: string[], player: any) {
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
 				const modeStat = `${Math.round((bw?.[apiMode + "eight_two_kills_bedwars"] / bw?.[apiMode + "eight_two_deaths_bedwars"]) * 100) / 100 || 0}`
-				card.addField(`${mode}: `, modeStat)
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat}KDR`, card.toClassic()]
+			return [`${modeStat}${statSuffix("KDR", style)}`, card.toClassic()]
 		}
 
 		case "bblr": {
@@ -97,9 +63,9 @@ function getPlayerBedwars(path: string[], player: any) {
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
 				const modeStat = `${Math.round((bw?.[apiMode + "eight_two_beds_broken_bedwars"] / bw?.[apiMode + "eight_two_beds_lost_bedwars"]) * 100) / 100 || 0}`
-				card.addField(`${mode}: `, modeStat)
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat}BBLR`, card.toClassic()]
+			return [`${modeStat}${statSuffix("BBLR", style)}`, card.toClassic()]
 		}
 
 		case "wlr": {
@@ -108,21 +74,21 @@ function getPlayerBedwars(path: string[], player: any) {
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
 				const modeStat = `${Math.round((bw?.[apiMode + "eight_two_wins_bedwars"] / bw?.[apiMode + "eight_two_losses_bedwars"]) * 100) / 100 || 0}`
-				card.addField(`${mode}: `, modeStat)
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat}WLR`, card.toClassic()]
+			return [`${modeStat}${statSuffix("WLR", style)}`, card.toClassic()]
 		}
 
 		case "ws":
 		case "winstreak": {
 			const card = new Card(`${player.displayname} - WS`)
-			const modeStat = bw?.[mode + "winstreak"] ?? "disabled"
+			const modeStat = bw?.[mode + "winstreak"] ?? "disabled "
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
-				const modeStat = `${bw?.[apiMode + "winstreak"] ?? "disabled"}`
-				card.addField(`${mode}: `, modeStat)
+				const modeStat = `${bw?.[apiMode + "winstreak"] ?? "disabled "}`
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat}WS`, card.toClassic()]
+			return [`${modeStat}${statSuffix("WS", style)}`, card.toClassic()]
 		}
 
 		case "index": {
@@ -131,9 +97,9 @@ function getPlayerBedwars(path: string[], player: any) {
 			bedwarsModes.forEach(mode => {
 				const apiMode = bedwarsModesMap.get(mode.toLowerCase()) ?? "";
 				const modeStat = `${Math.round(((player?.achievements?.bedwars_level || 0) * ((bw?.[apiMode + "final_kills_bedwars"] / bw?.[apiMode + "final_deaths_bedwars"]) ** 2)) / 10)}`
-				card.addField(`${mode}: `, modeStat)
+				card.addField(`${mode || "Overall"}: `, modeStat)
 			})
-			return [`${modeStat} index`, card.toClassic()]
+			return [`${modeStat}${statSuffix(" index", style)}`, card.toClassic()]
 		}
 
 		default: return "invalid path"
@@ -143,9 +109,21 @@ function getPlayerBedwars(path: string[], player: any) {
 function returnSuffix(level: number) {
 	return level <= 1099 ? "✫" : level < 2099 ? "✪" : "⚝"
 }
-// #endregion
 
-// (async () => {
-// 	const msg = await parseStats("I_Like_Cats__", "{bw.star} {username}: {bw.fkdr} - {bw.index}")
-// 	console.log(JSON.stringify(msg, null, 4))
-// })()
+function starColour(star: number) {
+	const suffix = returnSuffix(star)
+	const styledStar = new Message(`[${star}${suffix}]`, {
+		color: <Colours>starColours[Math.floor(star / 100)]
+	}).toClassic();
+	return styledStar
+}
+
+function statSuffix(word: string, style: string): string {
+	switch (style) {
+		case "num":
+		case "clean": return ""
+		case "lower": return word.toLowerCase();
+		case "upper":
+		default: return word.toUpperCase();
+	}
+}
