@@ -1,4 +1,7 @@
 # 🔌 HyProxy
+
+> If you like Hypixel proxies, I suggest you check out [P28](https://github.com/mauritsWilke/P28) which is a more updated and better programmed Hypixel proxy!
+
 HyProxy is a proxy that boosts your Hypixel experience by adding new features like custom commands, in-game user statistics and more!
 
 ## ⚙ How to install
